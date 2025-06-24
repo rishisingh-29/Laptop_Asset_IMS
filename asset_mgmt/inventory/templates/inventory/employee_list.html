@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employees</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; }
+        th { background: #007bff; color: white; }
+        .filter-form { margin-bottom: 20px; }
+        .btn { padding: 6px 12px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <h1>Employee List</h1>
+
+    <form method="get" class="filter-form">
+        <input type="text" name="q" placeholder="Search by name or email" value="{{ query|default:'' }}">
+        <select name="status">
+            <option value="">All Status</option>
+            <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option>
+        </select>
+        <button type="submit" class="btn">Filter</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Emp ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Designation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr>
+                <td>{{ emp.employee_id }}</td>
+                <td>{{ emp.full_name }}</td>
+                <td>{{ emp.email }}</td>
+                <td>{{ emp.status }}</td>
+                <td>{{ emp.employee_type }}</td>
+                <td>{{ emp.designation }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No employees found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

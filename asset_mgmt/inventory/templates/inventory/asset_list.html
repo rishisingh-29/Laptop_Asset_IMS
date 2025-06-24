@@ -1,0 +1,6 @@
+<h2>Assets</h2>
+<ul>
+  {% for asset in assets %}
+    <li>{{ asset.serial_no }} - {{ asset.model }} - {{ asset.status }}</li>
+  {% endfor %}
+</ul>
