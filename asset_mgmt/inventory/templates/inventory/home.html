@@ -1,51 +1,95 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>IT Asset Management</title>
-    <style>
-        body { font-family: sans-serif; background: #f8f9fa; padding: 30px; }
-        h1 { color: #343a40; }
-        .card {
-            background: white;
-            padding: 20px;
-            margin: 10px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn {
-            padding: 10px 15px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            margin-right: 10px;
-            border-radius: 5px;
-        }
-        .btn:hover {
-            background: #0056b3;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Dashboard - Asset Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100">
 
-    <h1>Welcome to IT Asset Management</h1>
-
-    <div class="card">
-        <h2>Quick Links</h2>
-        <a class="btn" href="/employees/">Employees</a>
-        <a class="btn" href="/assets/">Assets</a>
-        <a class="btn" href="/allocations/">Allocations</a>
-        <a class="btn" href="/allocate/">Allocate Asset</a>
-    </div>
-
-    <div class="card">
-        <h2>System Overview</h2>
-        <ul>
-            <li>Total Employees: {{ total_employees }}</li>
-            <li>Active: {{ active_employees }} | Inactive: {{ inactive_employees }}</li>
-            <li>Assets → Available: {{ available_assets }}, Allocated: {{ allocated_assets }}, Under Repair: {{ repair_assets }}</li>
-            <li>Total Allocations: {{ total_allocations }}</li>
+<!-- Sidebar -->
+<div class="flex">
+    <div class="w-64 bg-white min-h-screen shadow">
+        <div class="text-2xl font-bold p-6 border-b">Dashboard</div>
+        <ul class="p-4 space-y-3 text-gray-700">
+            <li><a href="#" class="block py-2 hover:text-blue-600">Dashboard</a></li>
+            <li><a href="{% url 'asset_list' %}" class="block py-2 hover:text-blue-600">Asset</a></li>
+            <li><a href="{% url 'employee_list' %}" class="block py-2 hover:text-blue-600 text-white bg-purple-500 rounded px-2">Employees</a></li>
+            <li><a href="#" class="block py-2 hover:text-blue-600">Reports</a></li>
+            <li><a href="#" class="block py-2 hover:text-blue-600">Maintenance / Repair</a></li>
         </ul>
     </div>
+
+    <!-- Main Dashboard -->
+    <div class="flex-1 p-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-semibold">Hello IT Admin 👋</h1>
+            <div class="flex gap-4">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded">+ Employee</button>
+                <button class="bg-green-500 text-white px-4 py-2 rounded">+ Asset</button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-5 gap-4 mb-8">
+            <div class="bg-red-100 p-4 rounded shadow text-center">
+                <p class="text-xl font-bold">{{ total_employees }}</p>
+                <p class="text-sm">Total Employees</p>
+            </div>
+            <div class="bg-yellow-100 p-4 rounded shadow text-center">
+                <p class="text-xl font-bold">{{ total_assets }}</p>
+                <p class="text-sm">Total Assets</p>
+            </div>
+            <div class="bg-green-100 p-4 rounded shadow text-center">
+                <p class="text-xl font-bold">{{ assigned_assets }}</p>
+                <p class="text-sm">Assigned Assets</p>
+            </div>
+            <div class="bg-purple-100 p-4 rounded shadow text-center">
+                <p class="text-xl font-bold">{{ unassigned_assets }}</p>
+                <p class="text-sm">Unassigned Assets</p>
+            </div>
+            <div class="bg-pink-100 p-4 rounded shadow text-center">
+                <p class="text-xl font-bold">{{ health_check_assets }}</p>
+                <p class="text-sm">For Health Check</p>
+            </div>
+        </div>
+
+        <!-- Employee Table -->
+        <div class="bg-white p-4 rounded shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">All Employees</h2>
+                <input type="text" placeholder="Search..." class="border px-3 py-1 rounded">
+            </div>
+            <table class="w-full text-sm">
+                <thead class="bg-gray-100 text-left">
+                    <tr>
+                        <th class="p-2">Full Name</th>
+                        <th class="p-2">Email</th>
+                        <th class="p-2">Type</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">DOJ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2">{{ emp.full_name }}</td>
+                        <td class="p-2">{{ emp.email }}</td>
+                        <td class="p-2">{{ emp.employee_type }}</td>
+                        <td class="p-2">{{ emp.status }}</td>
+                        <td class="p-2">{{ emp.date_of_joining }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-gray-500">No employees found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

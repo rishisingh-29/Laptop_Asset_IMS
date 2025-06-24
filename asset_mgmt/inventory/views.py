@@ -7,16 +7,21 @@ from .forms import AllocationForm
 from django.db.models import Q
 
 def home(request):
+    total_employees = Employee.objects.filter(status='active').count()
+    total_assets = Asset.objects.count()
+    assigned_assets = Asset.objects.filter(status='allocated').count()
+    unassigned_assets = Asset.objects.filter(status='available').count()
+    health_check_assets = Asset.objects.filter(status='under repair').count()
+    
+    employees = Employee.objects.all()
+
     context = {
-        'total_employees': Employee.objects.count(),
-        'active_employees': Employee.objects.filter(status='active').count(),
-        'inactive_employees': Employee.objects.filter(status='inactive').count(),
-
-        'available_assets': Asset.objects.filter(status='available').count(),
-        'allocated_assets': Asset.objects.filter(status='allocated').count(),
-        'repair_assets': Asset.objects.filter(status='under repair').count(),
-
-        'total_allocations': Allocation.objects.count(),
+        'total_employees': total_employees,
+        'total_assets': total_assets,
+        'assigned_assets': assigned_assets,
+        'unassigned_assets': unassigned_assets,
+        'health_check_assets': health_check_assets,
+        'employees': employees,
     }
     return render(request, 'inventory/home.html', context)
 
