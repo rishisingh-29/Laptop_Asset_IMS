@@ -63,7 +63,22 @@ def employee_list(request):
 
 def asset_list(request):
     assets = Asset.objects.all()
-    return render(request, 'inventory/asset_list.html', {'assets': assets})
+
+    # Status chart
+    status_counts = Asset.objects.values('status').annotate(count=Count('id'))
+
+    # In stock vs in production counts
+    instock_count = Asset.objects.filter(status='available').count()
+    inproduction_count = Asset.objects.filter(status='allocated').count()
+
+    return render(request, 'inventory/asset_list.html', {
+        'assets': assets,
+        'status_counts': list(status_counts),
+        'instock_count': instock_count,
+        'inproduction_count': inproduction_count,
+        'active_page': 'asset'  # ← mark this page as active
+    })
+
 
 def allocation_list(request):
     allocations = Allocation.objects.select_related('employee', 'asset')
