@@ -6,14 +6,27 @@ from .models import Employee, Asset, Allocation
 from .forms import AllocationForm
 from django.db.models import Q
 
+from django.db.models import Count
+
+from django.shortcuts import render
+from .models import Employee, Asset
+from django.db.models import Count
+
 def home(request):
     total_employees = Employee.objects.filter(status='active').count()
     total_assets = Asset.objects.count()
     assigned_assets = Asset.objects.filter(status='allocated').count()
     unassigned_assets = Asset.objects.filter(status='available').count()
     health_check_assets = Asset.objects.filter(status='under repair').count()
-    
+
     employees = Employee.objects.all()
+
+    # Pie Chart (status-wise count)
+    status_counts = Asset.objects.values('status').annotate(count=Count('id'))
+
+    # Stacked Bar Chart: overall in stock vs in production (allocated)
+    instock_count = Asset.objects.filter(status='available').count()
+    inproduction_count = Asset.objects.filter(status='allocated').count()
 
     context = {
         'total_employees': total_employees,
@@ -22,9 +35,11 @@ def home(request):
         'unassigned_assets': unassigned_assets,
         'health_check_assets': health_check_assets,
         'employees': employees,
+        'status_counts': list(status_counts),
+        'instock_count': instock_count,
+        'inproduction_count': inproduction_count,
     }
     return render(request, 'inventory/home.html', context)
-
 
 def employee_list(request):
     query = request.GET.get('q')
