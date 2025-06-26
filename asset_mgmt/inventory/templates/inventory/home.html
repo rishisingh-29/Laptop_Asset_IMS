@@ -6,6 +6,7 @@
     <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
@@ -80,12 +81,12 @@
         <!-- Charts -->
         <div class="grid grid-cols-2 gap-6 mb-10">
             <!-- Bar Chart -->
-            <div class="bg-white p-6 rounded-xl shadow" style="height: 300px;"> 
-                <canvas id="barChart" class="w-full h-64"></canvas>
+            <div class="bg-white p-6 rounded-xl shadow h-[350px]">
+                <canvas id="barChart" class="w-full h-full"></canvas>
             </div>
 
-            <!-- Pie Chart with Centered Layout -->
-            <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center justify-center space-y-4" style="height: 300px;"> 
+            <!-- Pie Chart -->
+            <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center justify-center space-y-4 h-[350px]">
                 <canvas id="pieChart" class="w-40 h-40"></canvas>
                 <div class="flex space-x-4 text-sm">
                     <div class="flex items-center space-x-1">
@@ -132,8 +133,8 @@
                         <td>{{ emp.designation }}</td>
                         <td>{{ emp.email }}</td>
                         <td>
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                {% if emp.status == 'active' %} bg-green-100 text-green-800 
+                            <span class="min-w-[90px] inline-block text-center px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if emp.status|lower == 'active' %} bg-green-100 text-green-800 
                                 {% else %} bg-red-100 text-red-800 
                                 {% endif %}">
                                 {{ emp.status|title }}
@@ -151,9 +152,13 @@
 
 <!-- Charts Script -->
 <script>
-    const barCtx = document.getElementById('barChart').getContext('2d');
+    const pieLabels = {{ status_counts|safe }}.map(item => item.status);
+    const pieData = {{ status_counts|safe }}.map(item => item.count);
+    const pieTotal = pieData.reduce((a, b) => a + b, 0);
 
-    new Chart(barCtx, {
+    const barTotal = {{ instock_count }} + {{ inproduction_count }};
+
+    new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
             labels: ['In Stock', 'In Production'],
@@ -168,59 +173,70 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top:-10, bottom: 0 } },
             plugins: {
+                datalabels: {
+                    anchor: 'center',
+                    align: 'center',
+                    color: '#fff',
+                    formatter: (value) => (value / barTotal * 100).toFixed(1) + '%'
+                },
                 title: {
                     display: true,
-                    text: 'In Stock vs In Production'
+                    text: 'In Stock vs In Production',
+                    position: 'top'
                 },
-                legend: {
-                    display: false
-                }
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.label}: ${ctx.raw}`
+                    }
+                },
+                legend: { display: false }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Assets'
-                    }
+                    title: { display: true, text: 'Number of Assets' }
                 },
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Asset Status'
-                    }
+                    title: { display: true, text: 'Asset Status' }
                 }
             }
-        }
+        },
+        plugins: [ChartDataLabels]
     });
 
-    const pieCtx = document.getElementById('pieChart').getContext('2d');
-    const pieLabels = {{ status_counts|safe }}.map(item => item.status);
-    const pieData = {{ status_counts|safe }}.map(item => item.count);
-    const pieColors = ['#10b981', '#f97316', '#8b5cf6', '#ef4444'];
-
-    new Chart(pieCtx, {
+    new Chart(document.getElementById('pieChart'), {
         type: 'pie',
         data: {
             labels: pieLabels,
             datasets: [{
                 data: pieData,
-                backgroundColor: pieColors
+                backgroundColor: ['#10b981', '#f97316', '#8b5cf6', '#ef4444']
             }]
         },
         options: {
             responsive: true,
             plugins: {
+                datalabels: {
+                    color: '#000',
+                    formatter: (value) => (value / pieTotal * 100).toFixed(1) + '%'
+                },
                 title: {
                     display: true,
                     text: 'Assets by Status'
                 },
-                legend: {
-                    display: false
-                }
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return `${ctx.label}: ${ctx.raw}`;
+                        }
+                    }
+                },
+                legend: { display: false }
             }
-        }
+        },
+        plugins: [ChartDataLabels]
     });
 </script>
 </body>

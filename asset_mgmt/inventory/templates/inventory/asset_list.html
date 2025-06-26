@@ -97,17 +97,16 @@
                         <td class="py-2">{{ asset.serial_no }}</td>
                         <td>{{ asset.model }}</td>
                         <td>
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                {% if asset.status == 'available' %} bg-green-100 text-green-800
-                                {% elif asset.status == 'allocated' %} bg-orange-100 text-orange-800
-                                {% elif asset.status == 'under_repair' %} bg-purple-100 text-purple-800
-                                {% elif asset.status == 'retired' %} bg-red-100 text-red-800
+                            <span class="min-w-[90px] inline-block text-center px-2 py-1 text-xs font-semibold rounded-full
+                                {% if asset.status|lower == 'available' %} bg-green-100 text-green-800
+                                {% elif asset.status|lower == 'allocated' %} bg-orange-100 text-orange-800
+                                {% elif asset.status|lower == 'under_repair' %} bg-purple-100 text-purple-800
+                                {% elif asset.status|lower == 'retired' %} bg-red-100 text-red-800
                                 {% else %} bg-gray-100 text-gray-800
                                 {% endif %}">
                                 {{ asset.status|title }}
                             </span>
                         </td>
-
                         <td>{{ asset.created_at }}</td>
                     </tr>
                     {% empty %}
@@ -131,10 +130,7 @@
             type: 'pie',
             data: {
                 labels: pieLabels,
-                datasets: [{
-                    data: pieData,
-                    backgroundColor: pieColors
-                }]
+                datasets: [{ data: pieData, backgroundColor: pieColors }]
             },
             options: {
                 responsive: true,
