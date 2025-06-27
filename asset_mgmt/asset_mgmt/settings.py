@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'inventory'
+    'inventory',
+    'widget_tweaks',
+
 ]
 
 MIDDLEWARE = [
@@ -78,7 +80,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',     # or 'django.db.backends.sqlite3' for testing
         'NAME': 'itasset',
         'USER': 'root',
-        'PASSWORD': '123456',
+        'PASSWORD': '1234abcd',
         'HOST': 'localhost',
         'PORT': '3306',
     }

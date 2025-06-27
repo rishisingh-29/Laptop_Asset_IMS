@@ -7,5 +7,5 @@ urlpatterns = [
     path('employees/', views.employee_list, name='employee_list'),
     path('assets/', views.asset_list, name='asset_list'),
     path('allocations/', views.allocation_list, name='allocation_list'),
-    path('allocate/', views.allocate_asset, name='allocate_asset'),
+    path('allocate/', views.allocate_asset, name='allocation_form'),
 ]

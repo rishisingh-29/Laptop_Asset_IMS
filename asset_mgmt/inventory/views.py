@@ -86,6 +86,7 @@ def allocation_list(request):
 
 def allocate_asset(request):
     if request.method == 'POST':
+        # manually extract form data from request.POST (not recommended unless necessary)
         form = AllocationForm(request.POST)
         if form.is_valid():
             form.save()

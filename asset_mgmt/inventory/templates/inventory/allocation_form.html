@@ -1,6 +1,214 @@
-<h2>Allocate Asset</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Save</button>
-</form>
+{% extends "inventory/navigation_panel.html" %}
+
+{% block title %}Asset Allocation{% endblock %}
+{% load widget_tweaks %}
+
+{% block content %}
+<main class="flex-1 p-10">
+    <h1 class="text-2xl font-semibold mb-6">Hello Amit Mittal(IT) 👋🏼</h1>
+
+    <div class="bg-white p-10 rounded-2xl shadow max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h2 id="form-title" class="text-xl font-bold text-gray-900">Allocate Asset To User</h2>
+            <label class="flex items-center gap-2 text-sm font-medium">
+                Return
+                <input id="return-toggle" type="checkbox" class="form-toggle" />
+            </label>
+        </div>
+
+        <!-- Allocation Form -->
+        <form id="allocate-form" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+            {% csrf_token %}
+            
+            <!-- Column 1 -->
+            <div>
+                <label class="block text-sm font-medium mb-1">Employee Email</label>
+                <input type="email" 
+                name="{{ allocation_form.employee_email.name }}" 
+                id="{{ allocation_form.employee_email.id_for_label }}" 
+                class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" 
+                placeholder="employee@company.com"
+                value="{{ allocation_form.employee_email.value|default_if_none:'' }}">            
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Asset ID</label>
+                {% render_field allocation_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="ASSET-12345" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Asset Requirement Reason</label>
+                {% render_field allocation_form.requirement_reason class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Asset Processor</label>
+                {% render_field allocation_form.asset_processor class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Charger</label>
+                {% render_field allocation_form.charger class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <!-- Column 2 -->
+            <div>
+                <label class="block text-sm font-medium mb-1">IT SPOC Email ID</label>
+                {% render_field allocation_form.it_spoc_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="spoc@company.com" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Asset Make</label>
+                {% render_field allocation_form.asset_make class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Keyboard and Touchpad</label>
+                {% render_field allocation_form.keyboard_touchpad class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Allocation Location</label>
+                {% render_field allocation_form.allocation_location class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Office Location" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Bag</label>
+                {% render_field allocation_form.bag class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+
+            <!-- Radio Buttons -->
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-3">Allocation Type</label>
+                <div class="flex space-x-6">
+                    <label class="flex items-center">
+                        {% render_field allocation_form.allocation_type class="h-4 w-4 text-purple-600" value="in_person" %}
+                        <span class="ml-2 text-gray-700">In Person</span>
+                    </label>
+                    <label class="flex items-center">
+                        {% render_field allocation_form.allocation_type class="h-4 w-4 text-purple-600" value="courier" %}
+                        <span class="ml-2 text-gray-700">Courier</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Condition</label>
+                {% render_field allocation_form.condition class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="md:col-span-2 flex justify-between mt-6">
+                <a href="{% url 'allocation_list' %}" class="px-6 py-2 border-2 border-purple-500 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">Cancel</a>
+                <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">Allocate</button>
+            </div>
+        </form>
+
+        <!-- Return Form (Initially Hidden) -->
+        <form id="return-form" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 hidden">
+            {% csrf_token %}
+            
+            <!-- Column 1 -->
+            <div>
+                <label class="block text-sm font-medium mb-1">Employee Email</label>
+                {% render_field return_form.employee_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="employee@company.com" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Asset ID</label>
+                {% render_field return_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="ASSET-12345" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Power Status</label>
+                {% render_field return_form.power_status class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Screen Condition</label>
+                {% render_field return_form.screen class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Return Charger</label>
+                {% render_field return_form.return_charger class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <!-- Column 2 -->
+            <div>
+                <label class="block text-sm font-medium mb-1">IT SPOC Email ID</label>
+                {% render_field return_form.it_spoc_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="spoc@company.com" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Return Location</label>
+                {% render_field return_form.return_location class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Office Location" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Purpose</label>
+                {% render_field return_form.purpose class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Return Reason</label>
+                {% render_field return_form.return_reason class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Return Bag</label>
+                {% render_field return_form.return_bag class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <!-- Radio Buttons and Text Area -->
+            <div>
+                <label class="block text-sm font-medium mb-3">Return Type</label>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        {% render_field return_form.return_type class="h-4 w-4 text-purple-600" value="in_person" %}
+                        <span class="ml-2 text-gray-700">In Person</span>
+                    </label>
+                    <label class="flex items-center">
+                        {% render_field return_form.return_type class="h-4 w-4 text-purple-600" value="courier" %}
+                        <span class="ml-2 text-gray-700">Courier</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-1">Remarks</label>
+                {% render_field return_form.remarks class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" rows="3" %}
+            </div>
+            
+            <!-- Action Button -->
+            <div class="md:col-span-2 flex justify-end mt-6">
+                <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">Return Asset</button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleSwitch = document.getElementById('return-toggle');
+        const allocateForm = document.getElementById('allocate-form');
+        const returnForm = document.getElementById('return-form');
+        const formTitle = document.getElementById('form-title');
+        
+        toggleSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                allocateForm.classList.add('hidden');
+                returnForm.classList.remove('hidden');
+                formTitle.textContent = 'Return Asset From User';
+            } else {
+                allocateForm.classList.remove('hidden');
+                returnForm.classList.add('hidden');
+                formTitle.textContent = 'Allocate Asset To User';
+            }
+        });
+    });
+</script>
+{% endblock %}
