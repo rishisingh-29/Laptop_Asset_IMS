@@ -80,7 +80,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',     # or 'django.db.backends.sqlite3' for testing
         'NAME': 'itasset',
         'USER': 'root',
-        'PASSWORD': '1234abcd',
+        'PASSWORD': 'Root@1234',
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -121,7 +121,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

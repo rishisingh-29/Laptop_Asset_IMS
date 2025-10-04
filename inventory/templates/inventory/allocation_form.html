@@ -16,173 +16,197 @@
             </label>
         </div>
 
-        <!-- Allocation Form -->
         <form id="allocate-form" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
             {% csrf_token %}
+            <input type="hidden" name="form_type" value="allocate">
             
-            <!-- Column 1 -->
+            {% if allocation_form.errors %}
+            <div class="md:col-span-2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline">Please correct the errors below.</span>
+                <ul class="mt-2 text-sm list-disc list-inside">
+                    {% for field, errors in allocation_form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
             <div>
-                <label class="block text-sm font-medium mb-1">Employee Email</label>
-                <input type="email" 
-                name="{{ allocation_form.employee_email.name }}" 
-                id="{{ allocation_form.employee_email.id_for_label }}" 
-                class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" 
-                placeholder="employee@company.com"
-                value="{{ allocation_form.employee_email.value|default_if_none:'' }}">            
+                <label for="{{ allocation_form.employee_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.employee_email.label }}</label>
+                {% render_field allocation_form.employee_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="employee@company.com" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Asset ID</label>
-                {% render_field allocation_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="ASSET-12345" %}
+                <label for="{{ allocation_form.asset_id.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.asset_id.label }}</label>
+                {% render_field allocation_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
-            
+
             <div>
-                <label class="block text-sm font-medium mb-1">Asset Requirement Reason</label>
-                {% render_field allocation_form.requirement_reason class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+                <label for="{{ allocation_form.assigned_date.id_for_label }}" class="block text-sm font-medium mb-1">Assigned Date</label>
+                {% render_field allocation_form.assigned_date class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
-            
+
             <div>
-                <label class="block text-sm font-medium mb-1">Asset Processor</label>
+                <label for="{{ allocation_form.asset_processor.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.asset_processor.label }}</label>
                 {% render_field allocation_form.asset_processor class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Charger</label>
+                <label for="{{ allocation_form.charger.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.charger.label }}</label>
                 {% render_field allocation_form.charger class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
-            <!-- Column 2 -->
             <div>
-                <label class="block text-sm font-medium mb-1">IT SPOC Email ID</label>
+                <label for="{{ allocation_form.it_spoc_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.it_spoc_email.label }}</label>
                 {% render_field allocation_form.it_spoc_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="spoc@company.com" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Asset Make</label>
+                <label for="{{ allocation_form.asset_make.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.asset_make.label }}</label>
                 {% render_field allocation_form.asset_make class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Keyboard and Touchpad</label>
+                <label for="{{ allocation_form.keyboard_touchpad.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.keyboard_touchpad.label }}</label>
                 {% render_field allocation_form.keyboard_touchpad class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Allocation Location</label>
+                <label for="{{ allocation_form.allocation_location.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.allocation_location.label }}</label>
                 {% render_field allocation_form.allocation_location class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Office Location" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Bag</label>
+                <label for="{{ allocation_form.bag.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.bag.label }}</label>
                 {% render_field allocation_form.bag class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
-            
 
-            <!-- Radio Buttons -->
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium mb-3">Allocation Type</label>
+                <label for="{{ allocation_form.requirement_reason.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.requirement_reason.label }}</label>
+                {% render_field allocation_form.requirement_reason class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-3">{{ allocation_form.allocation_method.label }}</label>
                 <div class="flex space-x-6">
+                    {% for radio in allocation_form.allocation_method %}
                     <label class="flex items-center">
-                        {% render_field allocation_form.allocation_type class="h-4 w-4 text-purple-600" value="in_person" %}
-                        <span class="ml-2 text-gray-700">In Person</span>
+                        {{ radio.tag }}
+                        <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
                     </label>
-                    <label class="flex items-center">
-                        {% render_field allocation_form.allocation_type class="h-4 w-4 text-purple-600" value="courier" %}
-                        <span class="ml-2 text-gray-700">Courier</span>
-                    </label>
+                    {% endfor %}
                 </div>
+                {% if allocation_form.allocation_method.errors %}
+                    <p class="text-red-500 text-xs italic">{{ allocation_form.allocation_method.errors }}</p>
+                {% endif %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Condition</label>
+                <label for="{{ allocation_form.condition.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.condition.label }}</label>
                 {% render_field allocation_form.condition class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
-            <!-- Action Buttons -->
             <div class="md:col-span-2 flex justify-between mt-6">
                 <a href="{% url 'allocation_list' %}" class="px-6 py-2 border-2 border-purple-500 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">Cancel</a>
                 <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">Allocate</button>
             </div>
         </form>
 
-        <!-- Return Form (Initially Hidden) -->
-        <form id="return-form" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 hidden">
+        <form id="return-form" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 {% if not return_form.is_bound %}hidden{% endif %}">
             {% csrf_token %}
+            <input type="hidden" name="form_type" value="return">
+
+            {% if return_form.errors %}
+            <div class="md:col-span-2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline">Please correct the errors below.</span>
+                <ul class="mt-2 text-sm list-disc list-inside">
+                    {% for field, errors in return_form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
             
-            <!-- Column 1 -->
             <div>
-                <label class="block text-sm font-medium mb-1">Employee Email</label>
+                <label for="{{ return_form.employee_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.employee_email.label }}</label>
                 {% render_field return_form.employee_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="employee@company.com" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Asset ID</label>
-                {% render_field return_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="ASSET-12345" %}
+                <label for="{{ return_form.asset_id.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.asset_id.label }}</label>
+                {% render_field return_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
+            </div>
+
+            <div>
+                <label for="{{ return_form.return_date.id_for_label }}" class="block text-sm font-medium mb-1">Return Date</label>
+                {% render_field return_form.return_date class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Power Status</label>
+                <label for="{{ return_form.power_status.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.power_status.label }}</label>
                 {% render_field return_form.power_status class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Screen Condition</label>
+                <label for="{{ return_form.screen.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.screen.label }}</label>
                 {% render_field return_form.screen class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Return Charger</label>
+                <label for="{{ return_form.return_charger.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_charger.label }}</label>
                 {% render_field return_form.return_charger class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
-            <!-- Column 2 -->
             <div>
-                <label class="block text-sm font-medium mb-1">IT SPOC Email ID</label>
+                <label for="{{ return_form.it_spoc_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.it_spoc_email.label }}</label>
                 {% render_field return_form.it_spoc_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="spoc@company.com" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Return Location</label>
+                <label for="{{ return_form.return_location.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_location.label }}</label>
                 {% render_field return_form.return_location class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Office Location" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Purpose</label>
+                <label for="{{ return_form.purpose.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.purpose.label }}</label>
                 {% render_field return_form.purpose class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Return Reason</label>
+                <label for="{{ return_form.return_reason.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_reason.label }}</label>
                 {% render_field return_form.return_reason class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
             <div>
-                <label class="block text-sm font-medium mb-1">Return Bag</label>
+                <label for="{{ return_form.return_bag.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_bag.label }}</label>
                 {% render_field return_form.return_bag class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
             </div>
             
-            <!-- Radio Buttons and Text Area -->
             <div>
-                <label class="block text-sm font-medium mb-3">Return Type</label>
+                <label class="block text-sm font-medium mb-3">{{ return_form.return_method.label }}</label>
                 <div class="space-y-2">
+                    {% for radio in return_form.return_method %}
                     <label class="flex items-center">
-                        {% render_field return_form.return_type class="h-4 w-4 text-purple-600" value="in_person" %}
-                        <span class="ml-2 text-gray-700">In Person</span>
+                        {{ radio.tag }}
+                        <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
                     </label>
-                    <label class="flex items-center">
-                        {% render_field return_form.return_type class="h-4 w-4 text-purple-600" value="courier" %}
-                        <span class="ml-2 text-gray-700">Courier</span>
-                    </label>
+                    {% endfor %}
                 </div>
             </div>
-            
+
             <div>
-                <label class="block text-sm font-medium mb-1">Remarks</label>
+                <label for="{{ return_form.remarks.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.remarks.label }}</label>
                 {% render_field return_form.remarks class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" rows="3" %}
             </div>
             
-            <!-- Action Button -->
-            <div class="md:col-span-2 flex justify-end mt-6">
+            <div class="md:col-span-2 flex justify-between mt-6">
+                <a href="{% url 'allocation_list' %}" class="px-6 py-2 border-2 border-purple-500 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">Cancel</a>
                 <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">Return Asset</button>
             </div>
         </form>
@@ -198,6 +222,12 @@
         const returnForm = document.getElementById('return-form');
         const formTitle = document.getElementById('form-title');
         
+        // Initial state check based on if return_form has errors (is_bound)
+        if (returnForm.classList.contains('hidden') === false) {
+             toggleSwitch.checked = true; // Set toggle if return form is shown due to errors
+             formTitle.textContent = 'Return Asset From User';
+        }
+
         toggleSwitch.addEventListener('change', function() {
             if (this.checked) {
                 allocateForm.classList.add('hidden');
