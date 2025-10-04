@@ -1,0 +1,143 @@
+{% extends 'inventory/navigation_panel.html' %}
+{% block title %}Assets{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">All Assets</h1>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-2 gap-6 mb-10">
+    <!-- Bar Chart -->
+    <div class="bg-white p-6 rounded-xl shadow" style="height: 300px;">
+        <canvas id="barChart" class="w-full h-full"></canvas>
+    </div>
+
+    <!-- Pie Chart -->
+    <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center justify-center space-y-4" style="height: 300px;">
+        <canvas id="pieChart" class="w-40 h-40"></canvas>
+        <div class="flex flex-wrap justify-center gap-4 text-sm">
+            <div class="flex items-center space-x-1">
+                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span>Available</span>
+            </div>
+            <div class="flex items-center space-x-1">
+                <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <span>Allocated</span>
+            </div>
+            <div class="flex items-center space-x-1">
+                <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span>Under Repair</span>
+            </div>
+            <div class="flex items-center space-x-1">
+                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span>Retired</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assets Table -->
+<div class="bg-white p-6 rounded-xl shadow">
+    <table class="w-full table-auto text-left text-sm">
+        <thead>
+            <tr class="text-gray-600 border-b">
+                <th class="pb-2">Serial No.</th>
+                <th class="pb-2">Model</th>
+                <th class="pb-2">Status</th>
+                <th class="pb-2">Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+            <tr class="border-t hover:bg-gray-100">
+                <td class="py-2">{{ asset.serial_no }}</td>
+                <td>{{ asset.model }}</td>
+                <td>
+                    <span class="min-w-[90px] inline-block text-center px-2 py-1 text-xs font-semibold rounded-full
+                        {% if asset.status|lower == 'available' %} bg-green-100 text-green-800
+                        {% elif asset.status|lower == 'allocated' %} bg-orange-100 text-orange-800
+                        {% elif asset.status|lower == 'under repair' %} bg-purple-100 text-purple-800
+                        {% elif asset.status|lower == 'retired' %} bg-red-100 text-red-800
+                        {% else %} bg-gray-100 text-gray-800
+                        {% endif %}">
+                        {{ asset.status|title }}
+                    </span>
+                </td>
+                <td>{{ asset.created_at }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center py-4 text-gray-400">No assets found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Safely assign Django context data to JS variables
+    const statusData = {{ status_counts|safe }};
+    const inStockCount = {{ instock_count }};
+    const inProductionCount = {{ inproduction_count }};
+
+    // Pie Chart
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    const pieLabels = statusData.map(item => item.status);
+    const pieData = statusData.map(item => item.count);
+    const pieColors = ['#10b981', '#f97316', '#8b5cf6', '#ef4444'];
+
+    new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieData,
+                backgroundColor: pieColors
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: 'Assets by Status' },
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Bar Chart
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: ['In Stock', 'In Production'],
+            datasets: [{
+                label: 'Asset Count',
+                data: [inStockCount, inProductionCount],
+                backgroundColor: ['#3b82f6', '#22c55e'],
+                borderRadius: 5,
+                barThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: 'In Stock vs In Production' },
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Number of Assets' }
+                },
+                x: {
+                    title: { display: true, text: 'Asset Status' }
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}
