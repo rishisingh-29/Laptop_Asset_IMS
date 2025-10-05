@@ -34,6 +34,11 @@ class AllocationForm(forms.ModelForm):
             'delivery_type': forms.RadioSelect(choices=[('In Person', 'In Person'), ('Courier', 'Courier')]),
             'assigned_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Show only available assets in the dropdown
+        self.fields['asset'].queryset = Asset.objects.filter(status__iexact='Available').order_by('asset_id')
+
 
 class ReturnForm(forms.ModelForm):
     employee_email = forms.EmailField(label='Employee Email')
