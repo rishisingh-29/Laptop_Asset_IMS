@@ -84,3 +84,28 @@ class AssetForm(forms.ModelForm):
 class BulkAssetImportForm(forms.Form):
     """Form for the bulk CSV file upload."""
     file = forms.FileField(label="Upload CSV File")
+
+# -------------------------
+# EMPLOYEE FORMS
+# -------------------------
+class EmployeeForm(forms.ModelForm):
+    """Form for adding a single employee."""
+    class Meta:
+        model = Employee
+        fields = ['full_name', 'email', 'designation', 'status', 'date_of_joining']
+        widgets = {
+            'date_of_joining': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['status'].choices = [
+            ('Active', 'Active'),
+            ('Inactive', 'Inactive'),
+            ('On Leave', 'On Leave'),
+        ]
+
+
+class BulkEmployeeImportForm(forms.Form):
+    """Form for the bulk CSV file upload."""
+    file = forms.FileField(label="Upload CSV File")

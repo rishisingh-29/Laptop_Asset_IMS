@@ -10,6 +10,7 @@ from django.http import JsonResponse
 
 from .models import Employee, Asset, Allocation
 from .forms import AllocationForm, ReturnForm, AssetForm, BulkAssetImportForm
+from .forms import EmployeeForm, BulkEmployeeImportForm
 
 def home(request):
     total_employees = Employee.objects.filter(status='Active').count()
@@ -198,6 +199,61 @@ def add_asset(request):
         'asset_form': asset_form, 'bulk_form': bulk_form,
     }
     return render(request, 'inventory/add_asset.html', context)
+
+
+
+def add_employee(request):
+    """Add single employee or import bulk employees."""
+    if request.method == 'POST':
+        if 'add_single_employee' in request.POST:
+            employee_form = EmployeeForm(request.POST)
+            if employee_form.is_valid():
+                employee_form.save()
+                messages.success(request, 'Employee has been successfully added!')
+                return redirect('add_employee')
+            else:
+                bulk_form = BulkEmployeeImportForm()
+        elif 'import_bulk_employee' in request.POST:
+            bulk_form = BulkEmployeeImportForm(request.POST, request.FILES)
+            if bulk_form.is_valid():
+                csv_file = request.FILES['file']
+                file = TextIOWrapper(csv_file.file, encoding='utf-8')
+                reader = csv.DictReader(file)
+
+                created_count = 0
+                errors = []
+                for row_num, row in enumerate(reader, 2):
+                    try:
+                        if not row.get('full_name') or not row.get('email'):
+                            errors.append(f"Row {row_num}: full_name and email are required.")
+                            continue
+
+                        Employee.objects.create(
+                            full_name=row.get('full_name'),
+                            email=row.get('email'),
+                            designation=row.get('designation'),
+                            status=row.get('status', 'Active'),
+                            date_of_joining=row.get('date_of_joining') or None,
+                        )
+                        created_count += 1
+                    except Exception as e:
+                        errors.append(f"Row {row_num}: Error - {e}")
+
+                if created_count > 0:
+                    messages.success(request, f'Successfully imported {created_count} employees.')
+                if errors:
+                    error_message = "Bulk import failed for some rows: " + " | ".join(errors)
+                    messages.error(request, error_message)
+                return redirect('add_employee')
+            else:
+                employee_form = EmployeeForm()
+    else:
+        employee_form = EmployeeForm()
+        bulk_form = BulkEmployeeImportForm()
+
+    context = {'employee_form': employee_form, 'bulk_form': bulk_form}
+    return render(request, 'inventory/add_employee.html', context)
+
 
 # --- AJAX VIEWS ---
 def get_asset_details(request):
