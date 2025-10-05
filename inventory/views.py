@@ -7,6 +7,8 @@ from django.db.models import Q, Count, Prefetch # Prefetch ko yahan import karei
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from .forms import AssetForm, BulkAssetImportForm
+from django.contrib import messages
 
 def home(request):
     total_employees = Employee.objects.filter(status='Active').count()
@@ -250,3 +252,68 @@ def get_employee_assets(request):
         return JsonResponse({'assets': assets})
     except Employee.DoesNotExist:
         return JsonResponse({'assets': []})
+
+
+def add_asset(request):
+    if request.method == 'POST':
+        # Initialize forms to pass to context in case of errors
+        asset_form = AssetForm()
+        bulk_form = BulkAssetImportForm()
+        
+        if 'add_single_asset' in request.POST:
+            asset_form = AssetForm(request.POST)
+            if asset_form.is_valid():
+                asset_form.save()
+                messages.success(request, 'Asset has been successfully added!')
+                return redirect('asset_list') # Redirect to asset list for better UX
+
+        elif 'import_bulk_asset' in request.POST:
+            bulk_form = BulkAssetImportForm(request.POST, request.FILES)
+            if bulk_form.is_valid():
+                csv_file = request.FILES['file']
+                file = TextIOWrapper(csv_file.file, encoding='utf-8')
+                reader = csv.DictReader(file)
+                
+                created_count = 0
+                errors = []
+
+                for row_num, row in enumerate(reader, 2):
+                    try:
+                        if not row.get('asset_id') or not row.get('serial_number'):
+                            errors.append(f"Row {row_num}: asset_id and serial_number are required.")
+                            continue
+                        
+                        Asset.objects.create(
+                            asset_id=row.get('asset_id'),
+                            serial_number=row.get('serial_number'),
+                            asset_type=row.get('asset_type', 'Laptop'),
+                            brand=row.get('brand'),
+                            model=row.get('model'),
+                            processor=row.get('processor'),
+                            ram_gb=row.get('ram_gb') or None,
+                            storage_size_gb=row.get('storage_size_gb') or None,
+                            purchase_date=row.get('purchase_date') or None,
+                            warranty_expiry=row.get('warranty_expiry') or None,
+                            status=row.get('status', 'Available'),
+                            remarks=row.get('remarks')
+                        )
+                        created_count += 1
+                    except Exception as e:
+                        errors.append(f"Row {row_num}: Error - {e}")
+                
+                if created_count > 0:
+                    messages.success(request, f'Successfully imported {created_count} assets.')
+                if errors:
+                    for error in errors:
+                        messages.error(request, error)
+
+                return redirect('asset_list') # Redirect to asset list
+    else:
+        asset_form = AssetForm()
+        bulk_form = BulkAssetImportForm()
+
+    context = {
+        'asset_form': asset_form,
+        'bulk_form': bulk_form,
+    }
+    return render(request, 'inventory/add_asset.html', context)

@@ -11,5 +11,6 @@ urlpatterns = [
     path('transactions/', views.transaction_search, name='transaction_search'),
     path('ajax/get_asset_details/', views.get_asset_details, name='ajax_get_asset_details'),
     path('ajax/get_employee_assets/', views.get_employee_assets, name='ajax_get_employee_assets'),
+    path('assets/add/', views.add_asset, name='add_asset'), 
 
 ]

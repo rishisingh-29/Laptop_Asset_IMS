@@ -53,3 +53,34 @@ class ReturnForm(forms.ModelForm):
             'delivery_type': forms.RadioSelect(choices=[('In Person', 'In Person'), ('Courier', 'Courier')]),
             'returned_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
         }
+
+#"""assetform"""
+class AssetForm(forms.ModelForm):
+    """Form for adding a single asset with all fields."""
+    class Meta:
+        model = Asset
+        fields = [
+            'asset_id', 'serial_number', 'asset_type', 
+            'brand', 'model', 'processor', 'ram_gb', 
+            'storage_size_gb', 'purchase_date', 'warranty_expiry', 
+            'status', 'remarks'
+        ]
+        widgets = {
+            'purchase_date': forms.DateInput(attrs={'type': 'date'}),
+            'warranty_expiry': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['status'].choices = [
+            ('', 'Select Status'),
+            ('Available', 'Available'),
+            ('Allocated', 'Allocated'),
+            ('Under Repair', 'Under Repair'),
+            ('Retired', 'Retired'),
+        ]
+        self.fields['asset_type'].initial = 'Laptop'
+
+class BulkAssetImportForm(forms.Form):
+    """Form for the bulk CSV file upload."""
+    file = forms.FileField(label="Upload CSV File")
