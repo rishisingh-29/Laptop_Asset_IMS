@@ -1,143 +1,169 @@
 {% extends 'inventory/navigation_panel.html' %}
-{% block title %}Assets{% endblock %}
+{% block title %}All Assets{% endblock %}
 
 {% block content %}
-<!-- Header -->
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">All Assets</h1>
-</div>
-
-<!-- Charts -->
-<div class="grid grid-cols-2 gap-6 mb-10">
-    <!-- Bar Chart -->
-    <div class="bg-white p-6 rounded-xl shadow" style="height: 300px;">
-        <canvas id="barChart" class="w-full h-full"></canvas>
+<main class="flex-1 p-10">
+    <!-- Header with Buttons -->
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Assets</h1>
+        <div>
+            <a href="#" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold mr-3">Export</a>
+            <a href="#" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold">+ Asset</a>
+        </div>
     </div>
 
-    <!-- Pie Chart -->
-    <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center justify-center space-y-4" style="height: 300px;">
-        <canvas id="pieChart" class="w-40 h-40"></canvas>
-        <div class="flex flex-wrap justify-center gap-4 text-sm">
-            <div class="flex items-center space-x-1">
-                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span>Available</span>
+    <!-- Charts Section (Asset Requirement & Asset Report) -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-10">
+        <!-- Asset Requirement Line Chart (Placeholder for now) -->
+        <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="font-bold text-lg mb-4">Asset Requirement</h2>
+            <div class="h-64 flex items-center justify-center text-gray-400">
+                <!-- Replace this div with your actual line chart canvas -->
+                <p>Line Chart for Asset Requirement will be implemented here.</p>
             </div>
-            <div class="flex items-center space-x-1">
-                <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span>Allocated</span>
+        </div>
+        
+        <!-- Asset Report Pie Chart -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center space-y-4">
+             <div class="w-full flex justify-between items-center">
+                <h2 class="font-bold text-lg">Asset Report</h2>
+                <a href="#" class="text-sm text-purple-600 font-semibold">View Report</a>
             </div>
-            <div class="flex items-center space-x-1">
-                <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
-                <span>Under Repair</span>
-            </div>
-            <div class="flex items-center space-x-1">
-                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span>Retired</span>
+            <canvas id="pieChart" class="w-48 h-48"></canvas>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full"></div><span>Assigned Asset</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div><span>Assets In Scrap</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-blue-400 rounded-full"></div><span>Unassigned Asset</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-purple-500 rounded-full"></div><span>In Health Check</span>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Assets Table -->
-<div class="bg-white p-6 rounded-xl shadow">
-    <table class="w-full table-auto text-left text-sm">
-        <thead>
-            <tr class="text-gray-600 border-b">
-                <th class="pb-2">Serial No.</th>
-                <th class="pb-2">Model</th>
-                <th class="pb-2">Status</th>
-                <th class="pb-2">Created</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for asset in assets %}
-            <tr class="border-t hover:bg-gray-100">
-                <td class="py-2">{{ asset.serial_no }}</td>
-                <td>{{ asset.model }}</td>
-                <td>
-                    <span class="min-w-[90px] inline-block text-center px-2 py-1 text-xs font-semibold rounded-full
-                        {% if asset.status|lower == 'available' %} bg-green-100 text-green-800
-                        {% elif asset.status|lower == 'allocated' %} bg-orange-100 text-orange-800
-                        {% elif asset.status|lower == 'under repair' %} bg-purple-100 text-purple-800
-                        {% elif asset.status|lower == 'retired' %} bg-red-100 text-red-800
-                        {% else %} bg-gray-100 text-gray-800
-                        {% endif %}">
-                        {{ asset.status|title }}
-                    </span>
-                </td>
-                <td>{{ asset.created_at }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" class="text-center py-4 text-gray-400">No assets found.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+    <!-- All Assets Table -->
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-xl font-bold">All Asset</h2>
+                <p class="text-sm text-gray-500">Total Asset Details</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <input type="text" placeholder="Search..." class="border px-4 py-2 rounded-lg w-64 focus:ring-2 focus:ring-purple-300 focus:border-purple-500">
+                <select class="border px-4 py-2 rounded-lg bg-white">
+                    <option>Sort by: Newest</option>
+                    <option>Sort by: Oldest</option>
+                </select>
+            </div>
+        </div>
 
-<!-- Chart.js Script -->
+        <table class="w-full table-auto text-left text-sm">
+            <thead>
+                <tr class="text-gray-600 border-b-2">
+                    <th class="py-3 px-2 font-semibold">Asset_id</th>
+                    <th class="py-3 px-2 font-semibold">Purchase Date</th>
+                    <th class="py-3 px-2 font-semibold">Model</th>
+                    <th class="py-3 px-2 font-semibold">Serial_number</th>
+                    <th class="py-3 px-2 font-semibold">Brand</th>
+                    <th class="py-3 px-2 font-semibold">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="py-3 px-2 font-medium text-gray-800">{{ asset.asset_id }}</td>
+                    <td class="py-3 px-2 text-gray-600">{{ asset.purchase_date|date:"d/m/y" }}</td>
+                    <td class="py-3 px-2 text-gray-600">{{ asset.model }}</td>
+                    <td class="py-3 px-2 text-gray-600">{{ asset.serial_number }}</td>
+                    <td class="py-3 px-2 text-gray-600">{{ asset.brand }}</td>
+                    <td class="py-3 px-2">
+                        <span class="min-w-[90px] inline-block text-center px-3 py-1 text-xs font-semibold rounded-md
+                            {% if asset.status == 'Available' %} bg-green-100 text-green-800
+                            {% elif asset.status == 'Allocated' %} bg-yellow-100 text-yellow-800
+                            {% elif asset.status == 'Under Repair' %} bg-red-100 text-red-800
+                            {% elif asset.status == 'Retired' %} bg-gray-200 text-gray-700
+                            {% else %} bg-gray-100 text-gray-800
+                            {% endif %}">
+                            {{ asset.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-6 text-gray-500">No assets found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div class="mt-6 flex justify-between items-center">
+            <p class="text-sm text-gray-600">
+                Showing {{ assets.start_index }} to {{ assets.end_index }} of {{ assets.paginator.count }} entries
+            </p>
+            <div class="inline-flex -space-x-px text-sm">
+                {% if assets.has_previous %}
+                    <a href="?page={{ assets.previous_page_number }}" class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700">Previous</a>
+                {% endif %}
+
+                {% for num in assets.paginator.page_range %}
+                    {% if assets.number == num %}
+                        <span class="px-3 py-2 leading-tight text-purple-600 border border-purple-300 bg-purple-50" aria-current="page">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}" class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if assets.has_next %}
+                    <a href="?page={{ assets.next_page_number }}" class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="status-data" type="application/json">
+    {{ status_counts|safe }}
+</script>
 <script>
-    // Safely assign Django context data to JS variables
-    const statusData = {{ status_counts|safe }};
-    const inStockCount = {{ instock_count }};
-    const inProductionCount = {{ inproduction_count }};
+    // Parse Django context data from the JSON script tag
+    const statusData = JSON.parse(document.getElementById('status-data').textContent);
+    const pieLabels = statusData.map(item => item.status);
+    const pieDataPoints = statusData.map(item => item.count);
+
+    // Define colors to match the screenshot's legend if possible
+    const pieColors = {
+        'Allocated': '#facc15', // yellow-400
+        'Available': '#3b82f6', // blue-500 (representing Unassigned)
+        'Under Repair': '#a855f7', // purple-500 (representing In Health Check)
+        'Retired': '#4ade80' // green-400 (representing Assets in Scrap)
+    };
+    const backgroundColors = pieLabels.map(label => pieColors[label] || '#9ca3af'); // Default to gray
 
     // Pie Chart
     const pieCtx = document.getElementById('pieChart').getContext('2d');
-    const pieLabels = statusData.map(item => item.status);
-    const pieData = statusData.map(item => item.count);
-    const pieColors = ['#10b981', '#f97316', '#8b5cf6', '#ef4444'];
-
     new Chart(pieCtx, {
         type: 'pie',
         data: {
             labels: pieLabels,
             datasets: [{
-                data: pieData,
-                backgroundColor: pieColors
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: { display: true, text: 'Assets by Status' },
-                legend: { display: false }
-            }
-        }
-    });
-
-    // Bar Chart
-    const barCtx = document.getElementById('barChart').getContext('2d');
-    new Chart(barCtx, {
-        type: 'bar',
-        data: {
-            labels: ['In Stock', 'In Production'],
-            datasets: [{
-                label: 'Asset Count',
-                data: [inStockCount, inProductionCount],
-                backgroundColor: ['#3b82f6', '#22c55e'],
-                borderRadius: 5,
-                barThickness: 40
+                data: pieDataPoints,
+                backgroundColor: backgroundColors,
+                borderWidth: 0,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                title: { display: true, text: 'In Stock vs In Production' },
                 legend: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: { display: true, text: 'Number of Assets' }
-                },
-                x: {
-                    title: { display: true, text: 'Asset Status' }
-                }
             }
         }
     });
 </script>
-
 {% endblock %}

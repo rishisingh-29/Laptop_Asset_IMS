@@ -80,7 +80,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',     # or 'django.db.backends.sqlite3' for testing
         'NAME': 'itasset',
         'USER': 'root',
-        'PASSWORD': 'Root@1234',
+        'PASSWORD': '1234abcd',
         'HOST': 'localhost',
         'PORT': '3306',
     }

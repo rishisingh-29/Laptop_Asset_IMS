@@ -1,214 +1,89 @@
 {% extends "inventory/navigation_panel.html" %}
-
-{% block title %}Asset Allocation{% endblock %}
 {% load widget_tweaks %}
+
+{% block title %}Allocate/Return Asset{% endblock %}
 
 {% block content %}
 <main class="flex-1 p-10">
     <h1 class="text-2xl font-semibold mb-6">Hello Amit Mittal(IT) 👋🏼</h1>
-
-    <div class="bg-white p-10 rounded-2xl shadow max-w-7xl mx-auto">
+    <div class="bg-white p-10 rounded-2xl shadow-lg max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-8">
             <h2 id="form-title" class="text-xl font-bold text-gray-900">Allocate Asset To User</h2>
-            <label class="flex items-center gap-2 text-sm font-medium">
-                Return
-                <input id="return-toggle" type="checkbox" class="form-toggle" />
+            <label for="return-toggle" class="flex items-center cursor-pointer">
+                <span class="mr-3 text-sm font-medium text-gray-900">Return</span>
+                <div class="relative"><input type="checkbox" id="return-toggle" class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div></div>
             </label>
         </div>
 
-        <form id="allocate-form" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-            {% csrf_token %}
-            <input type="hidden" name="form_type" value="allocate">
-            
-            {% if allocation_form.errors %}
-            <div class="md:col-span-2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Error!</strong>
-                <span class="block sm:inline">Please correct the errors below.</span>
-                <ul class="mt-2 text-sm list-disc list-inside">
-                    {% for field, errors in allocation_form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ field|title }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
+        <!-- =================================================================== -->
+        <!-- ALLOCATE ASSET FORM                                                   -->
+        <!-- =================================================================== -->
+        <form id="allocate-form" method="POST" class="space-y-6">
+            {% csrf_token %}<input type="hidden" name="form_type" value="allocate">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+                <!-- Loop through all fields and render them -->
+                {% for field in allocation_form %}
+                    {% if field.name == 'delivery_type' %}
+                        <!-- Special handling for Radio buttons -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ field.label }}</label>
+                            <div id="allocation_delivery_options" class="flex items-center space-x-6 pt-2">
+                                {% for radio in field %}
+                                <label class="flex items-center cursor-pointer">
+                                    {{ radio.tag }}
+                                    <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% elif field.name != 'allocation_docket_id' %}
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">{{ field.label }}</label>
+                            {% render_field field class+="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white" %}
+                            {% for error in field.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
 
-            <div>
-                <label for="{{ allocation_form.employee_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.employee_email.label }}</label>
-                {% render_field allocation_form.employee_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="employee@company.com" %}
-            </div>
-            
-            <div>
-                <label for="{{ allocation_form.asset_id.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.asset_id.label }}</label>
-                {% render_field allocation_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-
-            <div>
-                <label for="{{ allocation_form.assigned_date.id_for_label }}" class="block text-sm font-medium mb-1">Assigned Date</label>
-                {% render_field allocation_form.assigned_date class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-
-            <div>
-                <label for="{{ allocation_form.asset_processor.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.asset_processor.label }}</label>
-                {% render_field allocation_form.asset_processor class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ allocation_form.charger.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.charger.label }}</label>
-                {% render_field allocation_form.charger class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ allocation_form.it_spoc_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.it_spoc_email.label }}</label>
-                {% render_field allocation_form.it_spoc_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="spoc@company.com" %}
-            </div>
-            
-            <div>
-                <label for="{{ allocation_form.asset_make.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.asset_make.label }}</label>
-                {% render_field allocation_form.asset_make class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ allocation_form.keyboard_touchpad.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.keyboard_touchpad.label }}</label>
-                {% render_field allocation_form.keyboard_touchpad class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ allocation_form.allocation_location.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.allocation_location.label }}</label>
-                {% render_field allocation_form.allocation_location class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Office Location" %}
-            </div>
-            
-            <div>
-                <label for="{{ allocation_form.bag.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.bag.label }}</label>
-                {% render_field allocation_form.bag class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-
-            <div class="md:col-span-2">
-                <label for="{{ allocation_form.requirement_reason.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.requirement_reason.label }}</label>
-                {% render_field allocation_form.requirement_reason class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium mb-3">{{ allocation_form.allocation_method.label }}</label>
-                <div class="flex space-x-6">
-                    {% for radio in allocation_form.allocation_method %}
-                    <label class="flex items-center">
-                        {{ radio.tag }}
-                        <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
-                    </label>
-                    {% endfor %}
+                <!-- Docket ID field (initially hidden) -->
+                <div id="allocation_docket_id_wrapper" class="hidden">
+                    <label for="{{ allocation_form.allocation_docket_id.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Docket ID</label>
+                    {% render_field allocation_form.allocation_docket_id class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter courier docket ID" %}
                 </div>
-                {% if allocation_form.allocation_method.errors %}
-                    <p class="text-red-500 text-xs italic">{{ allocation_form.allocation_method.errors }}</p>
-                {% endif %}
             </div>
-            
-            <div>
-                <label for="{{ allocation_form.condition.id_for_label }}" class="block text-sm font-medium mb-1">{{ allocation_form.condition.label }}</label>
-                {% render_field allocation_form.condition class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div class="md:col-span-2 flex justify-between mt-6">
-                <a href="{% url 'allocation_list' %}" class="px-6 py-2 border-2 border-purple-500 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">Cancel</a>
-                <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">Allocate</button>
-            </div>
+            <div class="flex justify-end items-center gap-4 mt-8 pt-6 border-t"><a href="{% url 'allocation_list' %}" class="px-8 py-3 border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 font-semibold">Cancel</a><button type="submit" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold">Allocate</button></div>
         </form>
 
-        <form id="return-form" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 {% if not return_form.is_bound %}hidden{% endif %}">
-            {% csrf_token %}
-            <input type="hidden" name="form_type" value="return">
+        <!-- =================================================================== -->
+        <!-- RETURN ASSET FORM                                                     -->
+        <!-- =================================================================== -->
+        <form id="return-form" method="POST" class="hidden space-y-6">
+            {% csrf_token %}<input type="hidden" name="form_type" value="return">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+                 {% for field in return_form %}
+                    {% if field.name == 'delivery_type' %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ field.label }}</label>
+                            <div id="return_delivery_options" class="flex items-center space-x-6 pt-2">
+                                {% for radio in field %}<label class="flex items-center cursor-pointer">{{ radio.tag }}<span class="ml-2 text-gray-700">{{ radio.choice_label }}</span></label>{% endfor %}
+                            </div>
+                        </div>
+                    {% elif field.name != 'return_docket_id' %}
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">{{ field.label }}</label>
+                            {% render_field field class+="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white" %}
+                            {% for error in field.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endif %}
+                 {% endfor %}
 
-            {% if return_form.errors %}
-            <div class="md:col-span-2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Error!</strong>
-                <span class="block sm:inline">Please correct the errors below.</span>
-                <ul class="mt-2 text-sm list-disc list-inside">
-                    {% for field, errors in return_form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ field|title }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            
-            <div>
-                <label for="{{ return_form.employee_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.employee_email.label }}</label>
-                {% render_field return_form.employee_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="employee@company.com" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.asset_id.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.asset_id.label }}</label>
-                {% render_field return_form.asset_id class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-
-            <div>
-                <label for="{{ return_form.return_date.id_for_label }}" class="block text-sm font-medium mb-1">Return Date</label>
-                {% render_field return_form.return_date class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.power_status.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.power_status.label }}</label>
-                {% render_field return_form.power_status class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.screen.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.screen.label }}</label>
-                {% render_field return_form.screen class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.return_charger.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_charger.label }}</label>
-                {% render_field return_form.return_charger class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.it_spoc_email.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.it_spoc_email.label }}</label>
-                {% render_field return_form.it_spoc_email class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="spoc@company.com" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.return_location.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_location.label }}</label>
-                {% render_field return_form.return_location class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Office Location" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.purpose.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.purpose.label }}</label>
-                {% render_field return_form.purpose class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.return_reason.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_reason.label }}</label>
-                {% render_field return_form.return_reason class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label for="{{ return_form.return_bag.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.return_bag.label }}</label>
-                {% render_field return_form.return_bag class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" %}
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium mb-3">{{ return_form.return_method.label }}</label>
-                <div class="space-y-2">
-                    {% for radio in return_form.return_method %}
-                    <label class="flex items-center">
-                        {{ radio.tag }}
-                        <span class="ml-2 text-gray-700">{{ radio.choice_label }}</span>
-                    </label>
-                    {% endfor %}
+                 <!-- Docket ID field (initially hidden) -->
+                <div id="return_docket_id_wrapper" class="hidden">
+                    <label for="{{ return_form.return_docket_id.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Docket ID</label>
+                    {% render_field return_form.return_docket_id class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter courier docket ID" %}
                 </div>
             </div>
-
-            <div>
-                <label for="{{ return_form.remarks.id_for_label }}" class="block text-sm font-medium mb-1">{{ return_form.remarks.label }}</label>
-                {% render_field return_form.remarks class="w-full border rounded-lg px-4 py-2 focus:ring-purple-500 focus:border-purple-500" rows="3" %}
-            </div>
-            
-            <div class="md:col-span-2 flex justify-between mt-6">
-                <a href="{% url 'allocation_list' %}" class="px-6 py-2 border-2 border-purple-500 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">Cancel</a>
-                <button type="submit" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">Return Asset</button>
-            </div>
+            <div class="flex justify-end items-center gap-4 mt-8 pt-6 border-t"><a href="{% url 'allocation_list' %}" class="px-8 py-3 border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 font-semibold">Cancel</a><button type="submit" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold">Return</button></div>
         </form>
     </div>
 </main>
@@ -216,29 +91,79 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleSwitch = document.getElementById('return-toggle');
-        const allocateForm = document.getElementById('allocate-form');
-        const returnForm = document.getElementById('return-form');
-        const formTitle = document.getElementById('form-title');
-        
-        // Initial state check based on if return_form has errors (is_bound)
-        if (returnForm.classList.contains('hidden') === false) {
-             toggleSwitch.checked = true; // Set toggle if return form is shown due to errors
-             formTitle.textContent = 'Return Asset From User';
-        }
+document.addEventListener('DOMContentLoaded', function () {
+    // --- General Toggle Logic ---
+    const toggle = document.getElementById('return-toggle');
+    const allocateForm = document.getElementById('allocate-form');
+    const returnForm = document.getElementById('return-form');
+    const formTitle = document.getElementById('form-title');
 
-        toggleSwitch.addEventListener('change', function() {
-            if (this.checked) {
-                allocateForm.classList.add('hidden');
-                returnForm.classList.remove('hidden');
-                formTitle.textContent = 'Return Asset From User';
-            } else {
-                allocateForm.classList.remove('hidden');
-                returnForm.classList.add('hidden');
-                formTitle.textContent = 'Allocate Asset To User';
-            }
-        });
+    function handleToggle() {
+        if (toggle.checked) {
+            allocateForm.style.display = 'none'; returnForm.style.display = 'block'; formTitle.textContent = 'Return Asset From User';
+        } else {
+            allocateForm.style.display = 'block'; returnForm.style.display = 'none'; formTitle.textContent = 'Allocate Asset To User';
+        }
+    }
+    toggle.addEventListener('change', handleToggle);
+    handleToggle();
+
+    // --- Dynamic Fields for Allocation Form ---
+    const assetSelect = document.getElementById('{{ allocation_form.asset.id_for_label }}');
+    const makeInput = document.getElementById('{{ allocation_form.asset_make.id_for_label }}');
+    const processorInput = document.getElementById('{{ allocation_form.asset_processor.id_for_label }}');
+
+    assetSelect.addEventListener('change', function () {
+        const assetId = this.value;
+        if (assetId) {
+            fetch(`{% url 'ajax_get_asset_details' %}?asset_id=${assetId}`)
+                .then(response => response.json())
+                .then(data => {
+                    makeInput.value = data.brand || '';
+                    processorInput.value = data.processor || '';
+                });
+        } else {
+            makeInput.value = ''; processorInput.value = '';
+        }
     });
+
+    // --- Dynamic Dropdown for Return Form ---
+    const returnEmailInput = document.getElementById('{{ return_form.employee_email.id_for_label }}');
+    const returnAssetSelect = document.getElementById('{{ return_form.asset.id_for_label }}');
+
+    returnEmailInput.addEventListener('blur', function () {
+        const email = this.value;
+        if (email) {
+            fetch(`{% url 'ajax_get_employee_assets' %}?email=${email}`)
+                .then(response => response.json())
+                .then(data => {
+                    returnAssetSelect.innerHTML = '<option value="">Select asset_id</option>';
+                    data.assets.forEach(asset => {
+                        const option = new Option(asset.text, asset.id);
+                        returnAssetSelect.add(option);
+                    });
+                });
+        }
+    });
+
+    // --- Show/Hide Docket ID Field Logic ---
+    function setupDocketIdToggle(radioGroupName, docketWrapperId) {
+        const deliveryOptions = document.querySelectorAll(`input[name="${radioGroupName}"]`);
+        const docketWrapper = document.getElementById(docketWrapperId);
+        
+        deliveryOptions.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'Courier') {
+                    docketWrapper.classList.remove('hidden');
+                } else {
+                    docketWrapper.classList.add('hidden');
+                }
+            });
+        });
+    }
+
+    setupDocketIdToggle('{{ allocation_form.delivery_type.name }}', 'allocation_docket_id_wrapper');
+    setupDocketIdToggle('{{ return_form.delivery_type.name }}', 'return_docket_id_wrapper');
+});
 </script>
 {% endblock %}

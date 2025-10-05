@@ -8,4 +8,8 @@ urlpatterns = [
     path('assets/', views.asset_list, name='asset_list'),
     path('allocations/', views.allocation_list, name='allocation_list'),
     path('allocate/', views.allocate_asset, name='allocation_form'),
+    path('transactions/', views.transaction_search, name='transaction_search'),
+    path('ajax/get_asset_details/', views.get_asset_details, name='ajax_get_asset_details'),
+    path('ajax/get_employee_assets/', views.get_employee_assets, name='ajax_get_employee_assets'),
+
 ]
