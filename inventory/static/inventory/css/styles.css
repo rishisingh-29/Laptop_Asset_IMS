@@ -1,0 +1,89 @@
+/* inventory/static/inventory/css/styles.css */
+
+/*
+=================================================================
+ FONT IMPORT
+=================================================================
+We are using 'Inter', a clean and professional font from Google Fonts.
+This greatly improves the overall look and readability of the UI.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/*
+=================================================================
+ BASE STYLES & TRANSITIONS
+=================================================================
+Applying the font and adding smooth transitions for all elements.
+This makes the light/dark mode switch and hover effects feel seamless
+and professional, not jarring.
+*/
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+* {
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+/*
+=================================================================
+ CUSTOM SCROLLBAR STYLING
+=================================================================
+A custom scrollbar is a subtle but effective way to make a UI
+feel more polished and branded. This style is modern and minimalist.
+*/
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9; /* Light gray track in light mode */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #a855f7; /* Purple thumb */
+    border-radius: 10px;
+    border: 2px solid #f1f5f9; /* Creates a padding effect */
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #1e293b; /* Darker gray track in dark mode */
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background-color: #7e22ce; /* A slightly different purple for dark mode */
+    border-color: #1e293b;
+}
+
+/*
+=================================================================
+ SIDEBAR & OVERLAY STYLES FOR MOBILE
+=================================================================
+These classes control the responsive behavior of the sidebar.
+It will be off-screen by default on mobile and slide in when triggered.
+*/
+
+/* Hides the overlay by default */
+.mobile-overlay {
+    opacity: 0;
+    pointer-events: none; /* Can't be clicked when hidden */
+}
+
+/* Makes the overlay visible and clickable */
+.mobile-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Hides the sidebar off-screen to the left by default on mobile */
+@media (max-width: 1023px) {
+    .mobile-sidebar {
+        transform: translateX(-100%);
+    }
+}
+
+/* Slides the sidebar into view */
+.mobile-sidebar.active {
+    transform: translateX(0);
+}

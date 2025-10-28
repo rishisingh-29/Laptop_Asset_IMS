@@ -1,0 +1,205 @@
+{% extends "inventory/_layouts/base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header with Welcome Message and Action Buttons -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Welcome, {{ request.user.employee_profile.full_name|default:request.user.username }}!</h1>
+            <p class="mt-1 text-gray-600 dark:text-gray-400">Here's an overview of the asset management system.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- =================================================================== -->
+            <!-- FIX #1: Added 'inventory:' namespace to the URL                     -->
+            <!-- =================================================================== -->
+            <a href="{% url 'inventory:add_employee' %}" class="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-sm text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                <i class="fas fa-user-plus mr-2"></i> Add Employee
+            </a>
+            <!-- =================================================================== -->
+            <!-- FIX #2: Added 'inventory:' namespace to the URL                     -->
+            <!-- =================================================================== -->
+            <a href="{% url 'inventory:add_asset' %}" class="inline-flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-sm text-white transition">
+                <i class="fas fa-plus mr-2"></i> Add Asset
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-blue-500 text-white p-6 rounded-2xl shadow-lg flex items-center gap-5">
+            <div class="bg-white/20 w-14 h-14 rounded-full flex items-center justify-center"><i class="fas fa-users text-2xl"></i></div>
+            <div>
+                <p class="text-3xl font-extrabold">{{ total_employees|default:"0" }}</p>
+                <p class="text-sm font-medium opacity-80">Total Employees</p>
+            </div>
+        </div>
+        <div class="bg-green-500 text-white p-6 rounded-2xl shadow-lg flex items-center gap-5">
+            <div class="bg-white/20 w-14 h-14 rounded-full flex items-center justify-center"><i class="fas fa-laptop-code text-2xl"></i></div>
+            <div>
+                <p class="text-3xl font-extrabold">{{ total_assets|default:"0" }}</p>
+                <p class="text-sm font-medium opacity-80">Total Assets</p>
+            </div>
+        </div>
+        <div class="bg-yellow-500 text-white p-6 rounded-2xl shadow-lg flex items-center gap-5">
+            <div class="bg-white/20 w-14 h-14 rounded-full flex items-center justify-center"><i class="fas fa-check-circle text-2xl"></i></div>
+            <div>
+                <p class="text-3xl font-extrabold">{{ assigned_assets|default:"0" }}</p>
+                <p class="text-sm font-medium opacity-80">Assigned Assets</p>
+            </div>
+        </div>
+        <div class="bg-purple-500 text-white p-6 rounded-2xl shadow-lg flex items-center gap-5">
+            <div class="bg-white/20 w-14 h-14 rounded-full flex items-center justify-center"><i class="fas fa-box-open text-2xl"></i></div>
+            <div>
+                <p class="text-3xl font-extrabold">{{ available_assets|default:"0" }}</p>
+                <p class="text-sm font-medium opacity-80">Available Assets</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div class="lg:col-span-3 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold mb-4">Asset Overview</h3>
+            <div class="h-80"><canvas id="barChart"></canvas></div>
+        </div>
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold mb-4">Assets by Status</h3>
+            <div class="h-80 flex items-center justify-center"><canvas id="pieChart"></canvas></div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity Log -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Recent Activity Log</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">The latest actions performed by administrators.</p>
+            </div>
+            <!-- =================================================================== -->
+            <!-- FIX #3: Added 'inventory:' namespace to the URL                     -->
+            <!-- =================================================================== -->
+            <a href="{% url 'inventory:audit_log_viewer' %}" class="font-medium text-sm text-purple-600 hover:underline dark:text-purple-400">View All</a>
+        </div>
+        
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for log in recent_logs %}
+            <div class="flex items-start gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <div class="mt-1 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full {% if 'ASSIGNED' in log.action_type %} bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 {% elif 'RETURNED' in log.action_type %} bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 {% elif 'CREATED' in log.action_type %} bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 {% elif 'UPDATED' in log.action_type %} bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400 {% elif 'DELETED' in log.action_type %} bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 {% endif %}">
+                    <i class="fas {% if 'ASSIGNED' in log.action_type %} fa-arrow-right {% elif 'RETURNED' in log.action_type %} fa-arrow-left {% elif 'CREATED' in log.action_type %} fa-plus {% elif 'UPDATED' in log.action_type %} fa-pen {% elif 'DELETED' in log.action_type %} fa-trash {% endif %}"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm text-gray-800 dark:text-white">
+                        <span class="font-semibold">{{ log.details.actor_name }}</span>
+                        {% if log.action_type == 'ASSET_ASSIGNED' %}
+                            assigned asset <span class="font-semibold font-mono">{{ log.details.asset_serial }}</span> to <span class="font-semibold">{{ log.details.employee_name }}</span>.
+                        {% elif log.action_type == 'ASSET_RETURNED' %}
+                            processed a return for asset <span class="font-semibold font-mono">{{ log.details.asset_serial }}</span> from <span class="font-semibold">{{ log.details.employee_name }}</span>.
+                        {% elif log.action_type == 'ASSET_CREATED' %}
+                            created a new asset: <span class="font-semibold">{{ log.details.asset_model }} ({{ log.details.asset_serial }})</span>.
+                        {% elif log.action_type == 'ASSET_DELETED' %}
+                            <span class="text-red-500">deleted</span> asset: <span class="font-semibold">{{ log.details.deleted_asset_model }} ({{ log.details.deleted_asset_serial }})</span>.
+                        {% else %}
+                            performed action: {{ log.get_action_type_display|default:log.action_type|title }}
+                        {% endif %}
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ log.timestamp|timesince }} ago</p>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if not recent_logs %}
+            <div class="text-center py-12 px-6">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">No Activity Yet</h3>
+                <p class="mt-2 text-gray-500 dark:text-gray-400">Recent administrative actions will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Data passed from the Django view
+    const statusCounts = JSON.parse('{{ status_counts_json|safe }}');
+    const barChartData = JSON.parse('{{ bar_chart_data_json|safe }}');
+
+    // Helper to check if we are in dark mode
+    const isDarkMode = () => document.documentElement.classList.contains('dark');
+
+    // Chart.js Global Defaults
+    Chart.defaults.font.family = 'Inter';
+    Chart.defaults.plugins.legend.display = false;
+    
+    const pieChartCtx = document.getElementById('pieChart')?.getContext('2d');
+    if (pieChartCtx) {
+        new Chart(pieChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusCounts.map(d => d.status),
+                datasets: [{
+                    data: statusCounts.map(d => d.count),
+                    backgroundColor: ['#f59e0b', '#10b981', '#8b5cf6', '#6b7280'],
+                    borderColor: isDarkMode() ? '#1f2937' : '#ffffff',
+                    borderWidth: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: isDarkMode() ? '#d1d5db' : '#4b5563',
+                            boxWidth: 12,
+                            padding: 20,
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const barChartCtx = document.getElementById('barChart')?.getContext('2d');
+    if (barChartCtx) {
+        new Chart(barChartCtx, {
+            type: 'bar',
+            data: {
+                labels: barChartData.labels,
+                datasets: [{
+                    label: 'Asset Count',
+                    data: barChartData.data,
+                    backgroundColor: ['#3b82f6', '#22c55e', '#ef4444'],
+                    borderRadius: 6,
+                    barPercentage: 0.6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: isDarkMode() ? '#374151' : '#e5e7eb' },
+                        ticks: { color: isDarkMode() ? '#9ca3af' : '#6b7280' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: isDarkMode() ? '#9ca3af' : '#6b7280' }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "inventory/_layouts/base.html" %}
+
+{% block title %}All Transactions{% endblock %}
+
+{% block page_title %}All Transactions{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Transaction History</h1>
+            <p class="mt-1 text-gray-600 dark:text-gray-400">A complete log of all asset assignments and returns.</p>
+        </div>
+        <!-- =================================================================== -->
+        <!-- THE FIX: Removed the extra space after the colon ':'                  -->
+        <!-- =================================================================== -->
+        <a href="{% url 'inventory:allocation_form' %}" class="inline-flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-sm text-white transition shadow-md">
+            <i class="fas fa-plus mr-2"></i> New Allocation
+        </a>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-600 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700/50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Employee</th>
+                        <th scope="col" class="px-6 py-3">Asset (Serial No.)</th>
+                        <th scope="col" class="px-6 py-3">Assigned Date</th>
+                        <th scope="col" class="px-6 py-3">Returned Date</th>
+                        <th scope="col" class="px-6 py-3 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for allocation in page_obj %}
+                    <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                            <div class="font-semibold">{{ allocation.employee.full_name }}</div>
+                            <div class="text-xs text-gray-500">{{ allocation.employee.email }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-semibold font-mono">{{ allocation.asset.serial_number }}</div>
+                            <div class="text-xs text-gray-500">{{ allocation.asset.brand }} {{ allocation.asset.model }}</div>
+                        </td>
+                        <td class="px-6 py-4">{{ allocation.assigned_date|date:"M d, Y, h:i A" }}</td>
+                        <td class="px-6 py-4">{{ allocation.returned_date|date:"M d, Y, h:i A"|default:"--" }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                {% if allocation.transaction_status == 'Allocated' %} bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300
+                                {% elif allocation.transaction_status == 'Returned' %} bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300
+                                {% else %} bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300
+                                {% endif %}">
+                                {{ allocation.transaction_status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if not page_obj %}
+                <div class="text-center py-16 px-6">
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                        <i class="fas fa-exchange-alt text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">No Transactions Found</h3>
+                    <p class="mt-2 text-gray-500 dark:text-gray-400">Create a new allocation to see transaction history here.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+        <div class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+            <span class="text-sm text-gray-700 dark:text-gray-400">
+                Showing <span class="font-semibold">{{ page_obj.start_index }}</span> to <span class="font-semibold">{{ page_obj.end_index }}</span> of <span class="font-semibold">{{ page_obj.paginator.count }}</span> results
+            </span>
+            <div class="inline-flex -space-x-px rounded-md shadow-sm">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">Previous</a>
+                {% endif %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+# ===================================================================
+# PYTHON PACKAGE DEPENDENCIES
+# ===================================================================
+# Use 'pip install -r requirements.txt' to install all dependencies.
+
+# --- Core Framework ---
+Django==4.2.7
+
+# --- Database Driver ---
+# Required to connect Django to your MySQL database.
+mysqlclient==2.2.1
+
+# --- Environment Configuration ---
+# For reading variables from the .env file.
+python-dotenv==1.0.0
+
+# --- Production Deployment ---
+# A production-grade WSGI server for running your application.
+gunicorn==21.2.0
+# For serving static files efficiently in production.
+whitenoise==6.6.0
+
+# --- Frontend Helpers ---
+# Used in templates for rendering form fields with CSS classes.
+django-widget-tweaks==1.5.0

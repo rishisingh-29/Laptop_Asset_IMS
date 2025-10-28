@@ -1,0 +1,105 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - OYO Asset Management</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @media (prefers-color-scheme: dark) { html { background-color: #111827; } }
+        /* Style for invalid form fields */
+        .is-invalid {
+            border-color: #ef4444; /* red-500 */
+        }
+        .is-invalid:focus {
+            --tw-ring-color: #ef4444;
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-lg mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-600 rounded-2xl shadow-lg mb-4">
+                <i class="fas fa-user-plus text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Create an Account</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Join the OYO Asset Management system.</p>
+        </div>
+
+        <!-- Registration Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+            
+            <!-- General Form Error Messages (Non-field errors) -->
+            {% if form.non_field_errors %}
+            <div class="space-y-3 mb-6">
+                {% for error in form.non_field_errors %}
+                <div class="flex items-start p-3.5 rounded-lg border bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 text-sm" role="alert">
+                    <div class="flex-shrink-0 pt-0.5 mr-3">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <span>{{ error }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Registration Form -->
+            <form method="POST" class="space-y-5">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ field.label }}</label>
+                    <div class="relative">
+                        <!-- Icon logic -->
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            {% if field.name == 'username' %}<i class="fas fa-user text-gray-400"></i>
+                            {% elif field.name == 'email' %}<i class="fas fa-envelope text-gray-400"></i>
+                            {% elif 'password' in field.name %}<i class="fas fa-lock text-gray-400"></i>
+                            {% elif field.name == 'role' %}<i class="fas fa-briefcase text-gray-400"></i>
+                            {% endif %}
+                        </span>
+                        
+                        <!-- The actual form field, rendered by widget_tweaks -->
+                        {% render_field field class+="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition" %}
+                        
+                        <!-- Field-specific error messages -->
+                        {% for error in field.errors %}
+                            <p class="mt-2 text-xs text-red-500 dark:text-red-400">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" class="w-full mt-4 flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800 transition transform hover:scale-105">
+                        Register
+                    </button>
+                </div>
+            </form>
+
+            <!-- Link to Login Page -->
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
+                Already have an account?
+                <a href="{% url 'inventory:login' %}" class="font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 dark:hover:text-purple-300">
+                    Sign in here
+                </a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

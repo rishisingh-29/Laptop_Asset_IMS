@@ -1,0 +1,129 @@
+{% extends "inventory/_layouts/base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}{% if asset %}Edit Asset{% else %}Add New Asset{% endif %}{% endblock %}
+
+{% block page_title %}{% if asset %}Edit Asset{% else %}Add New Asset{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Asset Details</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill out the form to add a new asset to the inventory.</p>
+            </div>
+            <button id="open-modal-btn" type="button"
+                class="inline-flex items-center justify-center px-4 py-2 bg-gray-700 dark:bg-gray-600 hover:bg-gray-800 dark:hover:bg-gray-500 rounded-lg font-semibold text-sm text-white transition">
+                <i class="fas fa-upload mr-2"></i> Import Bulk Assets
+            </button>
+        </div>
+
+        <!-- Single Asset Form -->
+        <form method="POST" class="space-y-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for field in asset_form %}
+                <div class="{% if field.name == 'remarks' %}md:col-span-2 lg:col-span-3{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ field.label }}</label>
+                    {% if field.name == 'remarks' %}
+                        {% render_field field class+="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" rows="4" %}
+                    {% else %}
+                        {% render_field field class+="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" %}
+                    {% endif %}
+                    {% for error in field.errors %}<p class="mt-1 text-xs text-red-500 dark:text-red-400">{{ error }}</p>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex justify-end items-center gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="{% url 'inventory:asset_list' %}" class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600">Cancel</a>
+                <button type="submit" name="add_single_asset" class="px-5 py-2.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800 transition">
+                    {% if asset %}Save Changes{% else %}Add Asset{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- YOUR ORIGINAL MODALS ARE PRESERVED HERE, WITH UPGRADED STYLING -->
+<div id="bulk-import-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 hidden">
+    <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg m-4 border border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center mb-4 pb-4 border-b dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Import Bulk Assets</h2>
+            <button id="close-modal-btn" type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 text-blue-800 dark:text-blue-300 p-4 mb-6 text-sm" role="alert">
+            <p class="font-bold">Instructions</p>
+            <p>Upload a CSV with the required headers. Date format must be <code class="font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded">YYYY-MM-DD</code>.</p>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ bulk_form.file.label_tag }}</label>
+                {% render_field bulk_form.file class+="w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-300 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" %}
+                {% for error in bulk_form.file.errors %}<p class="text-red-500 dark:text-red-400 text-xs mt-1">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="flex justify-end items-center gap-3 mt-6 pt-4 border-t dark:border-gray-700">
+                <button type="button" id="cancel-modal-btn" class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600">Cancel</button>
+                <button type="submit" name="import_bulk_asset" class="px-5 py-2.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700">Import</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="result-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 {% if not messages %}hidden{% endif %}">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md m-4 text-center border dark:border-gray-700">
+        <div id="result-icon" class="mx-auto mb-4"></div>
+        <h2 id="result-title" class="text-2xl font-bold text-gray-900 dark:text-white mb-2"></h2>
+        <div id="result-messages" class="text-gray-600 dark:text-gray-300 mb-6">
+            {% if messages %}{% for message in messages %}<p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>{% endfor %}{% endif %}
+        </div>
+        <button id="close-result-modal" class="px-10 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700">OK</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- YOUR ORIGINAL JAVASCRIPT FOR MODALS IS PRESERVED HERE -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('bulk-import-modal');
+    const openBtn = document.getElementById('open-modal-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const cancelBtn = document.getElementById('cancel-modal-btn');
+
+    if (modal && openBtn && closeBtn && cancelBtn) {
+        const showModal = () => modal.classList.remove('hidden');
+        const hideModal = () => modal.classList.add('hidden');
+        openBtn.addEventListener('click', showModal);
+        closeBtn.addEventListener('click', hideModal);
+        cancelBtn.addEventListener('click', hideModal);
+        modal.addEventListener('click', (event) => { if(event.target === modal) hideModal(); });
+    }
+
+    const resultModal = document.getElementById('result-modal');
+    if (!resultModal) return;
+
+    const closeResultBtn = document.getElementById('close-result-modal');
+    const resultIcon = document.getElementById('result-icon');
+    const resultTitle = document.getElementById('result-title');
+    const messagesDiv = document.getElementById('result-messages');
+
+    if (messagesDiv && messagesDiv.innerText.trim() !== '') {
+        const firstMessage = messagesDiv.querySelector('p');
+        if (firstMessage.classList.contains('success')) {
+            resultTitle.innerText = 'Success!';
+            resultIcon.innerHTML = `<div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"><i class="fas fa-check text-3xl text-green-500 dark:text-green-400"></i></div>`;
+        } else if (firstMessage.classList.contains('error')) {
+            resultTitle.innerText = 'Failed!';
+            resultIcon.innerHTML = `<div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30"><i class="fas fa-times text-3xl text-red-500 dark:text-red-400"></i></div>`;
+        }
+    }
+    closeResultBtn.addEventListener('click', () => resultModal.classList.add('hidden'));
+});
+</script>
+{% endblock %}
