@@ -1,0 +1,212 @@
+Laptop_Asset_IMS/
+│
+├── requirements.txt
+├── README.md
+├── manage.py
+├── .env
+├── .gitignore
+│
+├── asset_mgmt/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   ├── asgi.py
+│   └── __pycache__/
+│
+└── inventory/
+    ├── __init__.py
+    ├── admin.py
+    ├── apps.py
+    ├── decorators.py
+    ├── forms.py
+    ├── middleware.py
+    ├── models.py
+    ├── signals.py
+    ├── tests.py
+    ├── urls.py
+    ├── __pycache__/
+    │
+    ├── management/
+    │   └── commands/
+    │       ├── __init__.py
+    │       ├── create_groups.py
+    │       └── __pycache__/
+    │
+    ├── migrations/
+    │   ├── __init__.py
+    │   ├── 0001_initial.py
+    │   └── __pycache__/
+    │
+    ├── static/
+    │   ├── download.jpg
+    │   └── inventory/
+    │       ├── css/
+    │       │   └── styles.css
+    │       └── js/
+    │           └── main.js
+    │
+    ├── templates/
+    │   └── inventory/
+    │       ├── _layouts/
+    │       │   ├── base.html
+    │       │   └── navigation.html
+    │       │
+    │       ├── allocations/
+    │       │   ├── allocation_form.html
+    │       │   ├── allocation_list.html
+    │       │   └── transaction_search.html
+    │       │
+    │       ├── assets/
+    │       │   ├── asset_form.html
+    │       │   └── asset_list.html
+    │       │
+    │       ├── auth/
+    │       │   ├── access_denied.html
+    │       │   ├── login.html
+    │       │   └── register.html
+    │       │
+    │       ├── dashboards/
+    │       │   ├── admin_dashboard.html
+    │       │   └── employee_dashboard.html
+    │       │
+    │       ├── employees/
+    │       │   ├── employee_form.html
+    │       │   └── employee_list.html
+    │       │
+    │       └── logs/
+    │           └── audit_log_viewer.html
+    │
+    ├── templatetags/
+    │   ├── __init__.py
+    │   ├── auth_extras.py
+    │   └── __pycache__/
+    │
+    └── views/
+        ├── __init__.py
+        ├── allocation_views.py
+        ├── api_views.py
+        ├── asset_views.py
+        ├── auth_views.py
+        ├── dashboard_views.py
+        ├── employee_views.py
+        ├── log_views.py
+        └── __pycache__/
+
+
+Project Structure Deep Dive: Har File Ka Kya Kaam Hai?
+1. Project Root Folder (Laptop_Asset_IMS/)
+
+Yeh aapke project ke sabse important, top-level files hain.
+
+manage.py:
+
+Kaam: Yeh aapka "master tool" hai. Aap iska istemaal karke Django se saare kaam karwate hain, jaise server start karna (runserver), database update karna (migrate), ya naya superuser banana (createsuperuser).
+
+.env:
+
+Kaam: Yeh aapki "secret tijori" (secret vault) hai. Ismein aap saari sensitive information rakhte hain jaise database password, secret key, etc. Is file ko kabhi bhi public nahi kiya jaata. Aapka settings.py is file se information padhta hai.
+
+requirements.txt:
+
+Kaam: Yeh aapke project ki "shopping list" hai. Ismein un saare Python packages ka naam likha hota hai jo aapke project ko chalane ke liye zaroori hain (jaise Django, mysqlclient, etc.). Isse koi bhi pip install -r requirements.txt chala kar aapka project aasani se setup kar sakta hai.
+
+README.md:
+
+Kaam: Yeh aapke project ki "user manual" hai. Ismein likha hota hai ki project kya hai, iske features kya hain, aur ise setup kaise karna hai.
+
+.gitignore:
+
+Kaam: Yeh Git (version control) ko batata hai ki kaun si files ko ignore karna hai. Hum iska istemaal .env jaisi secret files aur __pycache__ jaisi faltu folders ko save hone se rokne ke liye karte hain.
+
+2. Project Configuration (asset_mgmt/)
+
+Yeh folder poore Django project ki main settings rakhta hai.
+
+settings.py:
+
+Kaam: Yeh aapke project ka "brain" hai. Database connection se lekar, kaun si apps install hain, sab kuch yahan se control hota hai. Ab yeh file aapki tijori (.env) se secrets padhti hai.
+
+urls.py:
+
+Kaam: Yeh aapke project ka "main traffic controller" ya "receptionist" hai. Jab bhi koi user aapki website par aata hai, yeh file decide karti hai ki request ko inventory app ke paas bhejna hai.
+
+wsgi.py / asgi.py:
+
+Kaam: Yeh files project ko live (production) server par chalane ke liye istemaal hoti hain.
+
+3. Aapki Core App (inventory/)
+
+Yeh aapke project ka dil hai. Saara business logic, database structure, aur HTML pages yahin hain.
+
+models.py:
+
+Kaam: Yeh aapke database ka "blueprint" hai. Ismein aap batate hain ki aapke tables (jaise Employee, Asset, Allocation, AuditLog) mein kaun-kaun se columns honge aur unka type kya hoga.
+
+admin.py:
+
+Kaam: Yeh Django ke built-in /admin page ko configure karta hai. Aapne iska istemaal AuditLog table ko read-only banane ke liye kiya hai, jo ek important security feature hai.
+
+forms.py:
+
+Kaam: Yeh aapke saare HTML forms (jaise Registration form, Allocation form) ka structure aur unke validation rules (jaise password match hona chahiye) define karta hai.
+
+decorators.py:
+
+Kaam: Yeh aapke "security guards" hain. Ismein aapka @role_required decorator hai jo har page ko access karne se pehle check karta hai ki user ke paas permission hai ya nahi.
+
+middleware.py:
+
+Kaam: Yeh ek "helper" file hai. Iska ek hi kaam hai: signals.py ko yeh batana ki kaun sa user abhi logged in hai, taaki audit log mein user ka naam sahi se record ho sake.
+
+signals.py:
+
+Kaam: Yeh aapki "automatic CCTV camera" hai. Yeh file automatically ek log entry bana deti hai jab bhi koi admin kisi asset, employee ya allocation ko save ya delete karta hai.
+
+apps.py:
+
+Kaam: Yeh ek simple configuration file hai jiska kaam signals.py (CCTV camera) ko "turn on" karna hai jab application start hoti hai.
+
+urls.py (inventory ke andar):
+
+Kaam: Yeh aapki app ka "internal map" hai. Yeh batata hai ki /assets/ URL asset_views.py ke paas jaayega, aur /login/ URL auth_views.py ke paas.
+
+views/ (Folder):
+
+Kaam: Aapne apne saare view functions ko alag-alag files mein organize kiya hai. Yeh sabse acchi practice hai.
+
+auth_views.py: Login, logout, register ka saara logic.
+
+dashboard_views.py: "Smart" dashboard ka logic jo role ke hisaab se user ko sahi page dikhata hai.
+
+asset_views.py, employee_views.py, allocation_views.py: Har feature ke liye alag-alag view files.
+
+log_views.py: Audit Log viewer page ka saara logic (filtering, search, etc.).
+
+api_views.py: Woh views jo JavaScript ko JSON data bhejte hain (dynamic forms ke liye).
+
+templates/ (Folder):
+
+Kaam: Yeh aapke project ka "design" hai. Saari HTML files iske andar hain.
+
+_layouts/: base.html (master page) aur navigation.html (sidebar) jaise reusable hisse.
+
+auth/, dashboards/, assets/, etc.: Har feature ke liye alag-alag folders, jo views/ folder ke structure se match karte hain.
+
+templatetags/ (Folder):
+
+Kaam: Ismein aap HTML ke liye "custom magic" banate hain.
+
+auth_extras.py: Ismein aapka has_group filter hai, jisse aap HTML mein aasaani se {% if user|has_group:"IT_Admin" %} jaisa code likh paate hain.
+
+static/ (Folder):
+
+Kaam: Ismein aapki saari non-Python files (CSS, JavaScript, images) rakhi jaati hain.
+
+management/commands/ (Folder):
+
+Kaam: Ismein aap custom manage.py commands banate hain. create_groups.py ek aisi hi command hai jo aapke user roles banati hai.
+
+migrations/ (Folder):
+
+Kaam: Yeh aapke database ki "history book" hai. Django ise automatically manage karta hai. Isko kabhi bhi manually edit nahi karna chahiye.

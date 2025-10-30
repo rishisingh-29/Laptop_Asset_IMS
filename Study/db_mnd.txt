@@ -1,0 +1,348 @@
+use itasset;
+
+-- ===================================================================
+-- STEP 1: PURANE TABLES KO DELETE KAREIN (DROP)
+-- ===================================================================
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `inventory_allocation`;
+DROP TABLE IF EXISTS `inventory_asset`;
+DROP TABLE IF EXISTS `inventory_employee`;
+DROP TABLE IF EXISTS `inventory_auditlog`;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ===================================================================
+-- STEP 2: NAYE COMPLETE STRUCTURE KE SAATH TABLES BANAYEIN (CREATE)
+-- ===================================================================
+
+CREATE TABLE `inventory_employee` (
+  `employee_id` INT NOT NULL AUTO_INCREMENT, 
+  `full_name` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) UNIQUE NOT NULL, 
+  `status` VARCHAR(50) DEFAULT 'Active',
+  `designation` VARCHAR(255), 
+  `date_of_joining` DATE,
+  -- === TEMPORARILY FOREIGN KEY HATA DIYA ===
+  `user_id` INT UNIQUE NULL, -- 'UNIQUE' for OneToOneField
+  PRIMARY KEY (`employee_id`)
+  -- === FOREIGN KEY TEMPORARILY COMMENT OUT ===
+  -- CONSTRAINT `inventory_employee_user_id_fk_auth_user_id`
+  --   FOREIGN KEY (`user_id`) 
+  --   REFERENCES `auth_user` (`id`)
+  --   ON DELETE CASCADE
+);
+
+CREATE TABLE `inventory_asset` (
+  `asset_id` VARCHAR(50) NOT NULL, 
+  `asset_type` VARCHAR(50) DEFAULT 'Laptop',
+  `brand` VARCHAR(100), 
+  `model` VARCHAR(255), 
+  `serial_number` VARCHAR(255) UNIQUE NOT NULL,
+  `processor` VARCHAR(255), 
+  `ram_gb` INT, 
+  `storage_size_gb` INT, 
+  `purchase_date` DATE,
+  `warranty_expiry` DATE, 
+  `status` VARCHAR(50) DEFAULT 'Available', 
+  `remarks` TEXT,
+  PRIMARY KEY (`asset_id`)
+);
+
+CREATE TABLE `inventory_allocation` (
+  `allocation_id` INT NOT NULL AUTO_INCREMENT,
+  `asset_id` VARCHAR(50) NOT NULL,
+  `employee_id` INT NOT NULL,
+  `it_spoc_employee_id` INT NULL,
+  
+  -- Allocation Fields
+  `assigned_date` DATETIME,
+  `allocation_reason` VARCHAR(255) NULL,
+  `asset_condition_on_alloc` VARCHAR(255) NULL,
+  `charger_status` VARCHAR(50) NULL,
+  `bag_status` VARCHAR(50) NULL,
+  `keyboard_and_touchpad_status` VARCHAR(50) NULL,
+  `allocation_location` VARCHAR(255) NULL,
+  `delivery_type` VARCHAR(50) NULL,
+  `allocation_docket_id` VARCHAR(100) NULL,
+
+  -- Return Fields
+  `returned_date` DATETIME NULL,
+  `return_reason` VARCHAR(255) NULL,
+  `purpose` VARCHAR(255) NULL,
+  `asset_power_status` VARCHAR(50) NULL,
+  `asset_screen_status` VARCHAR(50) NULL,
+  `charger_return_status` VARCHAR(50) NULL,
+  `bag_return_status` VARCHAR(50) NULL,
+  `return_location` VARCHAR(255) NULL,
+  `return_docket_id` VARCHAR(100) NULL,
+  `remarks` TEXT NULL,
+  
+  `transaction_status` VARCHAR(50) DEFAULT 'Allocated',
+  PRIMARY KEY (`allocation_id`),
+  FOREIGN KEY (`asset_id`) REFERENCES `inventory_asset`(`asset_id`),
+  FOREIGN KEY (`employee_id`) REFERENCES `inventory_employee`(`employee_id`)
+);
+
+CREATE TABLE `inventory_auditlog` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `action_type` VARCHAR(50) NOT NULL,
+  `timestamp` DATETIME(6) NOT NULL,
+  `details` JSON NOT NULL,
+  `actor_id` INT NULL
+  -- === TEMPORARILY FOREIGN KEY HATA DIYA ===
+  -- CONSTRAINT `inventory_auditlog_actor_id_fk_auth_user_id`
+  --   FOREIGN KEY (`actor_id`)
+  --   REFERENCES `auth_user` (`id`)
+  --   ON DELETE SET NULL
+);
+
+-- ===================================================================
+-- STEP 3: 50 EMPLOYEES KA DATA INSERT KAREIN (WITHOUT user_id)
+-- ===================================================================
+
+INSERT INTO `inventory_employee` (`employee_id`, `full_name`, `email`, `status`, `designation`, `date_of_joining`) VALUES
+(1, 'Aarav Sharma', 'aarav.sharma@example.com', 'Active', 'Software Engineer', '2022-08-15'),
+(2, 'Saanvi Gupta', 'saanvi.gupta@example.com', 'Active', 'Project Manager', '2021-05-20'),
+(3, 'Vihaan Reddy', 'vihaan.reddy@example.com', 'Inactive', 'Data Analyst', '2020-11-30'),
+(4, 'Myra Singh', 'myra.singh@example.com', 'Active', 'UI/UX Designer', '2023-01-10'),
+(5, 'Advik Patel', 'advik.patel@example.com', 'Active', 'DevOps Engineer', '2022-09-01'),
+(6, 'Ananya Kumar', 'ananya.kumar@example.com', 'On Leave', 'HR Specialist', '2021-07-22'),
+(7, 'Kabir Mehta', 'kabir.mehta@example.com', 'Active', 'QA Tester', '2023-02-18'),
+(8, 'Diya Shah', 'diya.shah@example.com', 'Active', 'Team Lead', '2019-06-11'),
+(9, 'Arjun Iyer', 'arjun.iyer@example.com', 'Inactive', 'Marketing Intern', '2022-06-01'),
+(10, 'Ishaan Rao', 'ishaan.rao@example.com', 'Active', 'Solutions Architect', '2018-04-03'),
+(11, 'Kiara Joshi', 'kiara.joshi@example.com', 'Active', 'Frontend Developer', '2022-12-01'),
+(12, 'Vivaan Nair', 'vivaan.nair@example.com', 'On Leave', 'Product Manager', '2021-08-19'),
+(13, 'Zara Khan', 'zara.khan@example.com', 'Active', 'Business Analyst', '2023-01-25'),
+(14, 'Reyansh Verma', 'reyansh.verma@example.com', 'Active', 'IT Director', '2017-09-11'),
+(15, 'Anika Desai', 'anika.desai@example.com', 'Inactive', 'Graphic Designer', '2022-03-30'),
+(16, 'Rohan Malhotra', 'rohan.malhotra@example.com', 'Active', 'Backend Developer', '2020-07-07'),
+(17, 'Priya Krishnan', 'priya.krishnan@example.com', 'Active', 'Database Admin', '2020-10-15'),
+(18, 'Zain Ali', 'zain.ali@example.com', 'On Leave', 'QA Intern', '2022-11-09'),
+(19, 'Eva Murthy', 'eva.murthy@example.com', 'Active', 'Senior Team Lead', '2018-12-24'),
+(20, 'Aryan Menon', 'aryan.menon@example.com', 'Active', 'Full Stack Developer', '2022-05-17'),
+(21, 'Amit Mittal', 'amit.mittal@example.com', 'Active', 'IT Support Head', '2019-02-15'),
+(22, 'Neha Agarwal', 'neha.agarwal@example.com', 'Active', 'Cloud Engineer', '2023-03-01'),
+(23, 'Karan Pillai', 'karan.pillai@example.com', 'Active', 'Security Analyst', '2021-10-05'),
+(24, 'Aditi Bajaj', 'aditi.bajaj@example.com', 'Inactive', 'Content Writer', '2022-04-12'),
+(25, 'Sameer Khanna', 'sameer.khanna@example.com', 'Active', 'Network Engineer', '2020-03-18'),
+(26, 'Pooja Choudhary', 'pooja.choudhary@example.com', 'Active', 'Mobile Developer', '2022-07-14'),
+(27, 'Rahul Deshpande', 'rahul.deshpande@example.com', 'Active', 'System Admin', '2021-11-30'),
+(28, 'Sneha Mishra', 'sneha.mishra@example.com', 'On Leave', 'Data Scientist', '2023-04-05'),
+(29, 'Varun Kapoor', 'varun.kapoor@example.com', 'Active', 'Tech Lead', '2019-08-22'),
+(30, 'Nisha Jain', 'nisha.jain@example.com', 'Active', 'UI Developer', '2022-10-11'),
+(31, 'Ravi Thakur', 'ravi.thakur@example.com', 'Active', 'DevOps Lead', '2020-12-01'),
+(32, 'Simran Das', 'simran.das@example.com', 'Active', 'QA Lead', '2021-03-15'),
+(33, 'Abhishek Malhotra', 'abhishek.malhotra@example.com', 'Inactive', 'Intern', '2023-05-20'),
+(34, 'Meera Nair', 'meera.nair@example.com', 'Active', 'Product Designer', '2022-02-28'),
+(35, 'Vikram Singh', 'vikram.singh@example.com', 'Active', 'Security Head', '2018-07-17'),
+(36, 'Tanvi Reddy', 'tanvi.reddy@example.com', 'On Leave', 'Frontend Lead', '2021-09-08'),
+(37, 'Rajesh Kumar', 'rajesh.kumar@example.com', 'Active', 'Backend Lead', '2019-11-25'),
+(38, 'Anjali Mehta', 'anjali.mehta@example.com', 'Active', 'HR Manager', '2020-06-14'),
+(39, 'Siddharth Joshi', 'siddharth.joshi@example.com', 'Active', 'Full Stack Dev', '2022-08-03'),
+(40, 'Preeti Sharma', 'preeti.sharma@example.com', 'Active', 'Business Head', '2017-12-05'),
+(41, 'Manoj Gupta', 'manoj.gupta@example.com', 'Inactive', 'Support Engineer', '2022-01-20'),
+(42, 'Divya Patel', 'divya.patel@example.com', 'Active', 'Cloud Architect', '2021-04-12'),
+(43, 'Alok Verma', 'alok.verma@example.com', 'Active', 'Network Admin', '2020-09-07'),
+(44, 'Swati Das', 'swati.das@example.com', 'On Leave', 'UX Researcher', '2023-02-14'),
+(45, 'Rohit Khanna', 'rohit.khanna@example.com', 'Active', 'Mobile Lead', '2019-04-18'),
+(46, 'Geeta Iyer', 'geeta.iyer@example.com', 'Active', 'Data Engineer', '2022-06-22'),
+(47, 'Sanjay Mishra', 'sanjay.mishra@example.com', 'Active', 'System Engineer', '2021-12-10'),
+(48, 'Kavita Rao', 'kavita.rao@example.com', 'Inactive', 'Content Strategist', '2022-03-05'),
+(49, 'Deepak Chavan', 'deepak.chavan@example.com', 'Active', 'Infrastructure Head', '2018-10-30'),
+(50, 'Poonam Tiwari', 'poonam.tiwari@example.com', 'Active', 'Project Lead', '2020-01-15');
+
+-- ===================================================================
+-- STEP 4: 50 ASSETS KA DATA INSERT KAREIN
+-- ===================================================================
+
+INSERT INTO `inventory_asset` (`asset_id`, `asset_type`, `brand`, `model`, `serial_number`, `processor`, `ram_gb`, `storage_size_gb`, `purchase_date`, `warranty_expiry`, `status`, `remarks`) VALUES
+('ASSET001', 'Laptop', 'Dell', 'Latitude 7420', 'SN1A2B3C01', 'Intel i5-1135G7', 16, 512, '2023-01-10', '2026-01-09', 'Allocated', 'Multiple allocations history'),
+('ASSET002', 'Laptop', 'HP', 'EliteBook 840 G8', 'SN1A2B3C02', 'Intel i7-1165G7', 16, 512, '2023-01-12', '2026-01-11', 'Allocated', 'Currently with Saanvi Gupta'),
+('ASSET003', 'Laptop', 'Apple', 'MacBook Pro 14"', 'SN1A2B3C03', 'Apple M1 Pro', 16, 512, '2023-01-15', '2026-01-14', 'Allocated', 'Currently with Myra Singh'),
+('ASSET004', 'Laptop', 'Lenovo', 'ThinkPad X1 Carbon', 'SN1A2B3C04', 'Intel i7-1185G7', 16, 1000, '2023-02-01', '2026-01-31', 'Allocated', 'Multiple handovers'),
+('ASSET005', 'Laptop', 'Microsoft', 'Surface Laptop 4', 'SN1A2B3C05', 'AMD Ryzen 7', 16, 512, '2023-02-05', '2026-02-04', 'Allocated', 'Currently with Kabir Mehta'),
+('ASSET006', 'Laptop', 'Dell', 'XPS 15', 'SN1A2B3C06', 'Intel i9-11900H', 32, 1000, '2023-02-18', '2026-02-17', 'Allocated', 'Currently with Diya Shah'),
+('ASSET007', 'Tablet', 'Apple', 'iPad Pro 11"', 'SN1A2B3C07', 'Apple M1', 8, 256, '2023-03-02', '2026-03-01', 'Allocated', 'Currently with Ishaan Rao'),
+('ASSET008', 'Laptop', 'HP', 'Spectre x360', 'SN1A2B3C08', 'Intel i7-12700H', 16, 1000, '2023-03-10', '2026-03-09', 'Allocated', 'Currently with Kiara Joshi'),
+('ASSET009', 'Laptop', 'Lenovo', 'Yoga 9i', 'SN1A2B3C09', 'Intel i7-1260P', 16, 512, '2023-03-22', '2026-03-21', 'Allocated', 'Currently with Zara Khan'),
+('ASSET010', 'Laptop', 'Apple', 'MacBook Air M2', 'SN1A2B3C10', 'Apple M2', 16, 512, '2023-04-05', '2026-04-04', 'Allocated', 'Currently with Reyansh Verma'),
+('ASSET011', 'Laptop', 'Dell', 'Latitude 5430', 'SN1A2B3C11', 'Intel i5-1235U', 16, 256, '2023-04-18', '2026-04-17', 'Allocated', 'Currently with Rohan Malhotra'),
+('ASSET012', 'Laptop', 'HP', 'ProBook 450 G9', 'SN1A2B3C12', 'Intel i5-1235U', 8, 256, '2023-05-01', '2026-04-30', 'Allocated', 'Currently with Priya Krishnan'),
+('ASSET013', 'Laptop', 'Lenovo', 'ThinkPad T14 Gen 3', 'SN1A2B3C13', 'AMD Ryzen 5 PRO', 16, 512, '2023-05-12', '2026-05-11', 'Allocated', 'Currently with Eva Murthy'),
+('ASSET014', 'Laptop', 'Dell', 'Inspiron 15', 'SN1A2B3C14', 'AMD Ryzen 5', 8, 512, '2023-05-25', '2026-05-24', 'Allocated', 'Currently with Aryan Menon'),
+('ASSET015', 'Laptop', 'Asus', 'ZenBook 14', 'SN1A2B3C15', 'Intel i7-1260P', 16, 512, '2023-06-07', '2026-06-06', 'Allocated', 'Currently with Neha Agarwal'),
+('ASSET016', 'Laptop', 'Acer', 'Swift 3', 'SN1A2B3C16', 'Intel i5-1135G7', 8, 512, '2023-06-15', '2026-06-14', 'Available', 'In stock, ready for allocation'),
+('ASSET017', 'Laptop', 'HP', 'EliteBook 830 G8', 'SN1A2B3C17', 'Intel i5-1135G7', 16, 256, '2023-06-20', '2026-06-19', 'Under Repair', 'Returned with keyboard issue'),
+('ASSET018', 'Laptop', 'Apple', 'MacBook Pro 16"', 'SN1A2B3C18', 'Apple M1 Max', 32, 1000, '2023-07-03', '2026-07-02', 'Available', 'High-performance laptop, in stock'),
+('ASSET019', 'Laptop', 'Dell', 'Vostro 3400', 'SN1A2B3C19', 'Intel i3-1115G4', 8, 256, '2023-07-14', '2026-07-13', 'Available', 'Returned by ex-employee'),
+('ASSET020', 'Laptop', 'Lenovo', 'IdeaPad Slim 5', 'SN1A2B3C20', 'AMD Ryzen 7 5700U', 16, 512, '2023-07-25', '2026-07-24', 'Retired', 'End of service life'),
+('ASSET021', 'Laptop', 'HP', 'Pavilion 15', 'SN1A2B3C21', 'Intel i7-1255U', 16, 512, '2023-08-01', '2026-07-31', 'Allocated', 'Currently with Karan Pillai'),
+('ASSET022', 'Laptop', 'Dell', 'Latitude 7320', 'SN1A2B3C22', 'Intel i5-1145G7', 16, 256, '2023-08-10', '2026-08-09', 'Available', 'Ready for allocation'),
+('ASSET023', 'Laptop', 'Lenovo', 'ThinkPad P15 Gen 2', 'SN1A2B3C23', 'Intel i9-11950H', 32, 1000, '2023-08-20', '2026-08-19', 'Allocated', 'Currently with Sameer Khanna'),
+('ASSET024', 'Laptop', 'Apple', 'MacBook Air M1', 'SN1A2B3C24', 'Apple M1', 8, 256, '2023-09-01', '2026-08-31', 'Available', 'Spare device'),
+('ASSET025', 'Laptop', 'HP', 'ProBook 640 G8', 'SN1A2B3C25', 'Intel i5-1135G7', 16, 512, '2023-09-05', '2026-09-04', 'Allocated', 'Currently with Amit Mittal'),
+('ASSET026', 'Tablet', 'Samsung', 'Galaxy Tab S8', 'SN1A2B3C26', 'Snapdragon 8 Gen 1', 8, 128, '2023-09-10', '2026-09-09', 'Allocated', 'Currently with Pooja Choudhary'),
+('ASSET027', 'Laptop', 'Dell', 'Precision 5560', 'SN1A2B3C27', 'Intel i7-11850H', 32, 1000, '2023-09-15', '2026-09-14', 'Allocated', 'Currently with Rahul Deshpande'),
+('ASSET028', 'Monitor', 'Dell', 'UltraSharp U2720Q', 'SN1A2B3C28', 'N/A', 0, 0, '2023-09-20', '2026-09-19', 'Allocated', 'Currently with Sneha Mishra'),
+('ASSET029', 'Laptop', 'Apple', 'MacBook Pro 13"', 'SN1A2B3C29', 'Apple M2', 16, 512, '2023-09-25', '2026-09-24', 'Allocated', 'Currently with Varun Kapoor'),
+('ASSET030', 'Laptop', 'HP', 'EliteBook 845 G8', 'SN1A2B3C30', 'AMD Ryzen 7 PRO', 16, 512, '2023-10-01', '2026-09-30', 'Allocated', 'Currently with Nisha Jain'),
+('ASSET031', 'Laptop', 'Lenovo', 'ThinkPad X13', 'SN1A2B3C31', 'Intel i5-1135G7', 16, 256, '2023-10-05', '2026-10-04', 'Available', 'Ready for new allocation'),
+('ASSET032', 'Tablet', 'Microsoft', 'Surface Pro 9', 'SN1A2B3C32', 'Intel i5-1235U', 8, 256, '2023-10-10', '2026-10-09', 'Allocated', 'Currently with Ravi Thakur'),
+('ASSET033', 'Laptop', 'Dell', 'Latitude 5530', 'SN1A2B3C33', 'Intel i7-1255U', 16, 512, '2023-10-15', '2026-10-14', 'Allocated', 'Currently with Simran Das'),
+('ASSET034', 'Monitor', 'LG', 'UltraFine 4K', 'SN1A2B3C34', 'N/A', 0, 0, '2023-10-20', '2026-10-19', 'Available', 'Spare monitor'),
+('ASSET035', 'Laptop', 'Apple', 'MacBook Air M2', 'SN1A2B3C35', 'Apple M2', 8, 256, '2023-10-25', '2026-10-24', 'Allocated', 'Currently with Abhishek Malhotra'),
+('ASSET036', 'Laptop', 'HP', 'ZBook Firefly', 'SN1A2B3C36', 'Intel i5-1135G7', 16, 512, '2023-11-01', '2026-10-31', 'Allocated', 'Currently with Meera Nair'),
+('ASSET037', 'Laptop', 'Dell', 'XPS 13 Plus', 'SN1A2B3C37', 'Intel i7-1260P', 16, 512, '2023-11-05', '2026-11-04', 'Allocated', 'Currently with Vikram Singh'),
+('ASSET038', 'Tablet', 'Apple', 'iPad Air 5', 'SN1A2B3C38', 'Apple M1', 8, 64, '2023-11-10', '2026-11-09', 'Allocated', 'Currently with Tanvi Reddy'),
+('ASSET039', 'Laptop', 'Lenovo', 'ThinkPad E14', 'SN1A2B3C39', 'Intel i5-1235U', 8, 256, '2023-11-15', '2026-11-14', 'Allocated', 'Currently with Rajesh Kumar'),
+('ASSET040', 'Monitor', 'Samsung', 'Odyssey G7', 'SN1A2B3C40', 'N/A', 0, 0, '2023-11-20', '2026-11-19', 'Available', 'Gaming monitor'),
+('ASSET041', 'Laptop', 'Apple', 'MacBook Pro 16"', 'SN1A2B3C41', 'Apple M2 Max', 32, 1000, '2023-11-25', '2026-11-24', 'Allocated', 'Currently with Anjali Mehta'),
+('ASSET042', 'Laptop', 'Dell', 'Alienware m15', 'SN1A2B3C42', 'Intel i9-12900H', 32, 1000, '2023-12-01', '2026-11-30', 'Allocated', 'Currently with Siddharth Joshi'),
+('ASSET043', 'Laptop', 'HP', 'Victus 16', 'SN1A2B3C43', 'AMD Ryzen 7 5800H', 16, 512, '2023-12-05', '2026-12-04', 'Available', 'Gaming laptop'),
+('ASSET044', 'Tablet', 'Samsung', 'Galaxy Tab S7', 'SN1A2B3C44', 'Snapdragon 865', 6, 128, '2023-12-10', '2026-12-09', 'Allocated', 'Currently with Preeti Sharma'),
+('ASSET045', 'Laptop', 'Lenovo', 'Legion 5 Pro', 'SN1A2B3C45', 'AMD Ryzen 7 5800H', 16, 1000, '2023-12-15', '2026-12-14', 'Allocated', 'Currently with Manoj Gupta'),
+('ASSET046', 'Monitor', 'Dell', 'P2722H', 'SN1A2B3C46', 'N/A', 0, 0, '2023-12-20', '2026-12-19', 'Available', 'Office monitor'),
+('ASSET047', 'Laptop', 'Apple', 'MacBook Pro 14"', 'SN1A2B3C47', 'Apple M2 Pro', 16, 512, '2023-12-25', '2026-12-24', 'Allocated', 'Currently with Divya Patel'),
+('ASSET048', 'Laptop', 'Dell', 'Vostro 3510', 'SN1A2B3C48', 'Intel i3-1115G4', 8, 256, '2023-12-30', '2026-12-29', 'Available', 'Basic work laptop'),
+('ASSET049', 'Laptop', 'HP', 'Envy x360', 'SN1A2B3C49', 'AMD Ryzen 5 5500U', 8, 256, '2024-01-05', '2027-01-04', 'Allocated', 'Currently with Alok Verma'),
+('ASSET050', 'Laptop', 'Lenovo', 'Yoga 7i', 'SN1A2B3C50', 'Intel i5-1235U', 16, 512, '2024-01-10', '2027-01-09', 'Allocated', 'Currently with Swati Das');
+
+-- ===================================================================
+-- STEP 5: 50 ALLOCATIONS KA DATA INSERT KAREIN (COMPLEX TRANSACTION HISTORY)
+-- ===================================================================
+
+INSERT INTO `inventory_allocation` 
+(`allocation_id`, `asset_id`, `employee_id`, `it_spoc_employee_id`, `assigned_date`, `allocation_reason`, `asset_condition_on_alloc`, `charger_status`, `bag_status`, `keyboard_and_touchpad_status`, `allocation_location`, `delivery_type`, `allocation_docket_id`, `returned_date`, `return_reason`, `purpose`, `asset_power_status`, `asset_screen_status`, `charger_return_status`, `bag_return_status`, `return_location`, `return_docket_id`, `remarks`, `transaction_status`) 
+VALUES
+-- Active Allocations (1-20)
+(1, 'ASSET001', 1, 21, '2023-08-16 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(2, 'ASSET002', 2, 21, '2023-05-21 11:30:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(3, 'ASSET003', 4, 21, '2023-02-11 14:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(4, 'ASSET004', 5, 21, '2023-09-02 10:15:00', 'Additional', 'No Damage', 'Allocated', 'Not Allocated', 'Working', 'Remote', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(5, 'ASSET005', 7, 21, '2023-03-20 16:00:00', 'Replacement', 'No Damage', 'Allocated', 'Not Allocated', 'Working', 'Remote', 'Courier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(6, 'ASSET006', 8, 21, '2022-01-15 11:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Mumbai Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(7, 'ASSET007', 10, 21, '2022-04-10 12:30:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(8, 'ASSET008', 11, 21, '2023-01-03 15:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(9, 'ASSET009', 13, 21, '2023-02-28 10:45:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(10, 'ASSET010', 14, 21, '2021-09-15 11:00:00', 'Upgrade', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Mumbai Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(11, 'ASSET011', 16, 21, '2022-07-10 14:30:00', 'New Joiner', 'No Damage', 'Allocated', 'Not Allocated', 'Working', 'Remote', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(12, 'ASSET012', 17, 21, '2022-10-20 16:00:00', 'Replacement', 'Damage', 'Allocated', 'Not Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(13, 'ASSET013', 19, 21, '2023-07-05 11:00:00', 'Upgrade', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(14, 'ASSET014', 20, 21, '2023-07-18 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'Courier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(15, 'ASSET015', 22, 21, '2023-08-11 15:30:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(16, 'ASSET021', 23, 21, '2023-08-22 10:00:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(17, 'ASSET023', 25, 21, '2023-09-06 11:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Mumbai Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(18, 'ASSET025', 21, 21, '2023-09-07 14:00:00', 'Additional', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(19, 'ASSET026', 26, 21, '2023-09-12 09:30:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(20, 'ASSET027', 27, 21, '2023-09-18 10:15:00', 'Replacement', 'No Damage', 'Allocated', 'Not Allocated', 'Working', 'Remote', 'Courier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+
+-- Historical/Returned Allocations (21-40)
+(21, 'ASSET001', 3, 21, '2022-07-23 11:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, '2023-08-15 15:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Gurgaon Office', NULL, 'Asset transferred to new employee', 'Returned'),
+(22, 'ASSET001', 9, 21, '2021-12-01 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'Courier', 'SHIP123', '2022-07-22 18:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Remote', 'RETURN456', 'Employee resigned', 'Returned'),
+(23, 'ASSET002', 15, 21, '2022-08-20 12:00:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, '2023-05-20 16:00:00', 'Replacement', 'Upgrade', 'Power On', 'No Damage', 'Returned', 'Returned', 'Bangalore Office', NULL, 'Upgraded to new model', 'Returned'),
+(24, 'ASSET004', 18, 21, '2022-05-21 11:30:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, '2023-09-01 10:00:00', 'Replacement', 'Upgrade', 'Power On', 'No Damage', 'Returned', 'Returned', 'Gurgaon Office', NULL, 'Upgraded to newer model', 'Returned'),
+(25, 'ASSET004', 24, 21, '2021-12-01 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'Courier', 'SHIP124', '2022-05-20 18:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Remote', 'RETURN457', 'Employee resigned', 'Returned'),
+(26, 'ASSET016', 6, 21, '2022-07-23 11:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, '2023-09-01 15:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Gurgaon Office', NULL, 'Asset in good condition', 'Returned'),
+(27, 'ASSET017', 12, 21, '2022-08-20 12:00:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, '2023-08-25 16:00:00', 'Replacement', 'Upgrade', 'Power On', 'No Damage', 'Returned', 'Returned', 'Bangalore Office', NULL, 'Keyboard was faulty', 'Returned'),
+(28, 'ASSET018', 2, 21, '2022-05-21 11:30:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, '2023-07-04 10:00:00', 'Replacement', 'Upgrade', 'Power On', 'No Damage', 'Returned', 'Returned', 'Gurgaon Office', NULL, 'Upgraded to a new model', 'Returned'),
+(29, 'ASSET019', 3, 21, '2021-12-01 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'Courier', 'SHIP123', '2023-06-30 18:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Remote', 'RETURN456', 'Employee resigned', 'Returned'),
+(30, 'ASSET020', 9, 21, '2022-07-15 14:30:00', 'New Joiner', 'No Damage', 'Allocated', 'Not Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, '2023-01-15 18:00:00', 'Exit Employee', 'Termination', 'No Power', 'Damage', 'Not Returned', 'Not Returned', 'Gurgaon Office', NULL, 'Asset retired due to damage', 'Returned'),
+(31, 'ASSET022', 24, 21, '2022-04-13 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'In Person', NULL, '2023-08-15 17:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Remote', NULL, 'Standard exit process', 'Returned'),
+(32, 'ASSET024', 15, 21, '2022-03-31 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Mumbai Office', 'In Person', NULL, '2023-02-28 17:00:00', 'Exit Employee', 'Resignation', 'Power On', 'Flickering', 'Returned', 'Returned', 'Mumbai Office', NULL, 'Screen started flickering', 'Returned'),
+(33, 'ASSET028', 28, 21, '2023-09-22 11:00:00', 'Additional Equipment', 'No Damage', 'N/A', 'N/A', 'N/A', 'Gurgaon Office', 'In Person', NULL, '2023-10-15 16:00:00', 'Project Complete', 'Temporary Allocation', 'Working', 'No Damage', 'N/A', 'N/A', 'Gurgaon Office', NULL, 'Temporary monitor allocation ended', 'Returned'),
+(34, 'ASSET031', 33, 21, '2023-02-15 09:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, '2023-09-30 17:00:00', 'Exit Employee', 'Internship Complete', 'Power On', 'No Damage', 'Returned', 'Returned', 'Bangalore Office', NULL, 'Internship completed', 'Returned'),
+(35, 'ASSET034', 38, 21, '2023-03-10 14:00:00', 'Additional Equipment', 'No Damage', 'N/A', 'N/A', 'N/A', 'Mumbai Office', 'In Person', NULL, '2023-08-20 15:30:00', 'Department Transfer', 'Work Location Change', 'Working', 'No Damage', 'N/A', 'N/A', 'Mumbai Office', NULL, 'Employee transferred to different city', 'Returned'),
+(36, 'ASSET040', 44, 21, '2023-04-05 10:30:00', 'Project Requirement', 'No Damage', 'N/A', 'N/A', 'N/A', 'Remote', 'Courier', NULL, '2023-07-15 14:00:00', 'Project Complete', 'Temporary Allocation', 'Working', 'No Damage', 'N/A', 'N/A', 'Remote', NULL, 'Temporary gaming monitor allocation', 'Returned'),
+(37, 'ASSET043', 48, 21, '2023-01-20 11:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, '2023-06-10 16:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Gurgaon Office', NULL, 'Standard resignation process', 'Returned'),
+(38, 'ASSET046', 50, 21, '2023-05-15 13:00:00', 'Additional Equipment', 'No Damage', 'N/A', 'N/A', 'N/A', 'Bangalore Office', 'In Person', NULL, '2023-09-25 17:00:00', 'Work From Office', 'Permanent Setup', 'Working', 'No Damage', 'N/A', 'N/A', 'Bangalore Office', NULL, 'Monitor no longer needed', 'Returned'),
+(39, 'ASSET048', 41, 21, '2023-03-25 10:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'Courier', NULL, '2023-08-10 15:00:00', 'Exit Employee', 'Termination', 'Power On', 'No Damage', 'Returned', 'Returned', 'Remote', NULL, 'Employee terminated', 'Returned'),
+(40, 'ASSET016', 32, 21, '2021-11-10 09:30:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Mumbai Office', 'In Person', NULL, '2022-07-22 16:00:00', 'Exit Employee', 'Resignation', 'Power On', 'No Damage', 'Returned', 'Returned', 'Mumbai Office', NULL, 'Previous allocation before current one', 'Returned'),
+
+-- Additional Active Allocations (41-50)
+(41, 'ASSET029', 29, 21, '2023-09-28 10:00:00', 'Upgrade', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(42, 'ASSET030', 30, 21, '2023-10-03 11:30:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(43, 'ASSET032', 31, 21, '2023-10-12 14:00:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'Courier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(44, 'ASSET033', 32, 21, '2023-10-18 10:15:00', 'Additional', 'No Damage', 'Allocated', 'Not Allocated', 'Working', 'Mumbai Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(45, 'ASSET035', 33, 21, '2023-10-27 16:00:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(46, 'ASSET036', 34, 21, '2023-11-03 11:00:00', 'Replacement', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Bangalore Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(47, 'ASSET037', 35, 21, '2023-11-08 12:30:00', 'Upgrade', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(48, 'ASSET038', 36, 21, '2023-11-12 15:00:00', 'Additional Equipment', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Remote', 'Courier', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(49, 'ASSET039', 37, 21, '2023-11-18 10:45:00', 'New Joiner', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Mumbai Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated'),
+(50, 'ASSET041', 38, 21, '2023-11-28 11:00:00', 'Upgrade', 'No Damage', 'Allocated', 'Allocated', 'Working', 'Gurgaon Office', 'In Person', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Allocated');
+
+-- Sample data for the inventory_auditlog table (WITHOUT actor_id foreign key)
+INSERT INTO `inventory_auditlog` (`action_type`, `timestamp`, `details`)
+VALUES
+(
+    'ASSET_CREATED',
+    '2025-10-27 10:15:00',
+    '{"actor_name": "SuperAdminUser", "asset_id": "ASSET026", "asset_serial": "SN1A2B3C26", "asset_model": "MacBook Pro 16"}'
+),
+(
+    'ASSET_ASSIGNED',
+    '2025-10-27 10:20:00',
+    '{"actor_name": "Amit Mittal", "asset_serial": "SN1A2B3C26", "asset_model": "MacBook Pro 16", "employee_name": "Aarav Sharma", "allocation_id": 26}'
+),
+(
+    'EMPLOYEE_CREATED',
+    '2025-10-28 09:05:00',
+    '{"actor_name": "SuperAdminUser", "employee_id": 26, "employee_name": "Riya Singh", "employee_email": "riya.singh@example.com"}'
+),
+(
+    'ASSET_ASSIGNED',
+    '2025-10-28 09:10:00',
+    '{"actor_name": "Priya Sharma", "asset_serial": "SN1A2B3C11", "asset_model": "Latitude 5430", "employee_name": "Riya Singh", "allocation_id": 27}'
+),
+(
+    'ASSET_RETURNED',
+    '2025-10-28 11:30:00',
+    '{"actor_name": "Amit Mittal", "asset_serial": "SN1A2B3C02", "asset_model": "EliteBook 840 G8", "employee_name": "Saanvi Gupta", "allocation_id": 2}'
+),
+(
+    'ASSET_UPDATED',
+    '2025-10-28 14:00:00',
+    '{"actor_name": "SuperAdminUser", "asset_id": "ASSET001", "asset_serial": "SN1A2B3C01", "asset_model": "Latitude 7420"}'
+),
+(
+    'EMPLOYEE_UPDATED',
+    '2025-10-28 14:05:00',
+    '{"actor_name": "SuperAdminUser", "employee_id": 1, "employee_name": "Aarav Sharma", "employee_email": "aarav.sharma@example.com"}'
+),
+(
+    'ASSET_DELETED',
+    '2025-10-28 15:00:00',
+    '{"actor_name": "SuperAdminUser", "deleted_asset_id": "ASSET020", "deleted_asset_serial": "SN1A2B3C20", "deleted_asset_model": "IdeaPad Slim 5"}'
+),
+(
+    'ASSET_ASSIGNED',
+    '2025-10-28 16:45:00',
+    '{"actor_name": "Priya Sharma", "asset_serial": "SN1A2B3C22", "asset_model": "Latitude 7320", "employee_name": "Sameer Khanna", "allocation_id": 28}'
+),
+(
+    'EMPLOYEE_DELETED',
+    '2025-10-28 17:00:00',
+    '{"actor_name": "SuperAdminUser", "deleted_employee_id": 3, "deleted_employee_name": "Vihaan Reddy", "deleted_employee_email": "vihaan.reddy@example.com"}'
+);
+
+
+-- Step 1: Tell MySQL to ignore the rules for a moment
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Step 2: Drop all possible tables that might exist
+DROP TABLE IF EXISTS `auth_group`, `auth_group_permissions`, `auth_permission`, `auth_user`, `auth_user_groups`, `auth_user_user_permissions`;
+DROP TABLE IF EXISTS `django_admin_log`, `django_content_type`, `django_migrations`, `django_session`;
+DROP TABLE IF EXISTS `inventory_allocation`, `inventory_asset`, `inventory_employee`, `inventory_auditlog`;
+
+-- Step 3: Turn the rules back on
+SET FOREIGN_KEY_CHECKS = 1;
+
+SELECT employee_id, COUNT(DISTINCT asset_id) as asset_count
+FROM inventory_allocation
+WHERE transaction_status = 'Allocated'
+GROUP BY employee_id
+HAVING asset_count > 1;
+
+SELECT employee_id, COUNT(DISTINCT asset_id) as asset_count
+FROM inventory_allocation
+GROUP BY employee_id
+HAVING asset_count > 1;
